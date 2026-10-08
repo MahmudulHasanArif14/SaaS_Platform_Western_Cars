@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Local Claude settings
+.claude/settings.local.json
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Test artifacts
+coverage/
+playwright-report/
+test-results/
+
+# Local temp
+tmp/
+temp/
+
+# Supabase local runtime where appropriate
+.supabase/
+
+# Build artifacts
+dist/
+build/
