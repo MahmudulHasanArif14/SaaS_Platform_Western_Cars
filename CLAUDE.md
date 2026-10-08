@@ -393,6 +393,38 @@ After completing work:
 
 Never assume that work performed in another VS Code or web session is available unless it exists in the current repository state.
 
+## Project Memory Hierarchy
+
+Use the following hierarchy:
+
+1. MASTER_SPEC.md
+   - Defines what the product should eventually be.
+
+2. CLAUDE.md
+   - Defines how Claude must work.
+
+3. CURRENT_TASK.md
+   - Defines what Claude is authorized to work on now.
+
+4. WORKSPACE_STATE.md
+   - Defines the current repository/session state.
+
+5. ARCHITECTURE.md / DATA_MODEL.md / SECURITY_BASELINE.md
+   - Define current technical decisions.
+
+6. INTEGRATION_STATUS.md
+   - Defines actual external integration state.
+
+7. KNOWN_ISSUES.md
+   - Defines known problems and blockers.
+
+8. PRODUCTION_READINESS.md
+   - Defines whether the system is actually ready for production.
+
+When documents conflict, do not silently choose one.
+Stop, identify the conflict, and resolve it according to the project's
+approved architecture/decision process.
+
 ## Most Important Rule
 
 Correctness, security, maintainability and verifiable functionality are more important than feature count.
