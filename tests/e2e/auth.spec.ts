@@ -116,9 +116,8 @@ test.describe("signed out", () => {
       { maxRedirects: 0 },
     );
     expect(response.status()).toBe(307);
-    expect(response.headers()["location"]).toContain(
-      "/forgot-password?error=link",
-    );
+    // Path only, so the browser stays on the host it used.
+    expect(response.headers()["location"]).toBe("/forgot-password?error=link");
   });
 
   test("sign-in validates input before calling the server", async ({

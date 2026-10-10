@@ -104,6 +104,12 @@ test.describe("app shell", () => {
         .getByRole("navigation", { name: "Main" })
         .getByRole("link", { name: "Tokens" }),
     ).toBeVisible();
+    // Group labels fade out; axe reads blended colours until they are gone.
+    for (const label of await page
+      .locator('[data-sidebar="group-label"]')
+      .all()) {
+      await expect(label).toHaveCSS("opacity", "0");
+    }
     await expectNoViolations(page);
   });
 
