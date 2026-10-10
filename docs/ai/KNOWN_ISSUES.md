@@ -79,7 +79,7 @@ None
 ## MEDIUM
 
 ```text id="4kq9dc"
-ISSUE-002 (MITIGATED)
+ISSUE-002 (MITIGATED), ISSUE-009 (MITIGATED)
 ```
 
 ### ISSUE-002 — 5 high-severity advisories in the lint toolchain
@@ -106,7 +106,7 @@ Related decision: DECISIONS.md "CI audit gate scope"
 ## LOW
 
 ```text id="m7t3za"
-ISSUE-004, ISSUE-006, ISSUE-007, ISSUE-008 (ISSUE-001, ISSUE-003, ISSUE-005 RESOLVED)
+ISSUE-004, ISSUE-006, ISSUE-007, ISSUE-010 (ISSUE-001, ISSUE-003, ISSUE-005, ISSUE-008 RESOLVED)
 ```
 
 ### ISSUE-001 — Home page references deleted images
@@ -140,16 +140,53 @@ Related files: src/app/globals.css, docs/design/UI_UX_DESIGN_BRIEF.md
 ### ISSUE-008 — Theme script needs the CSP nonce
 
 ```text
-Status: OPEN
+Status: RESOLVED
 Severity: LOW
 Area: Security headers / theming
 First detected: 2026-10-10 (T-102)
-Actual: `next-themes` injects an inline script to set the theme before paint. A nonce-based CSP (T-103) will
-        block it unless the nonce is passed to the provider.
-Impact: None today (no CSP). With CSP and no nonce: theme flash and a CSP violation report.
-Proposed fix: Pass the request nonce to ThemeProvider in T-103.
+Resolution: T-103 passes the request nonce from the root layout to ThemeProvider.
+Verification: E2E — every script tag carries the request nonce; theme tests pass with 0 CSP violations.
 Related task: T-103
-Related files: src/components/theme-provider.tsx
+Related files: src/app/layout.tsx, src/components/theme-provider.tsx
+```
+
+### ISSUE-009 — `notFound()` in a layout answers 200 on streamed routes
+
+```text
+Status: MITIGATED
+Severity: MEDIUM
+Area: Security / routing
+First detected: 2026-10-11 (T-103, production-build probe)
+Actual: With a nonce-based CSP every route is rendered per request and streamed. The status line is sent before
+        a nested layout runs, so `notFound()` there returns HTTP 200 with the not-found UI, and the page
+        segment's content was still present in the response. `/design-system` did this in a production build.
+Mitigation: `src/proxy.ts` rewrites preview routes to a 404 before rendering when `APP_ENV=production`
+        (case, percent-encoding, RSC and prefetch variants probed: 404, no content). The layout check stays as
+        a second layer.
+Impact: Any future gate written only as `notFound()` / `redirect()` in a layout can leak the page payload and
+        return the wrong status. Directly relevant to authentication (T-104) and org resolution (T-107).
+Required: Decide access in `src/proxy.ts` and again in each page / data function; never rely on a layout alone.
+          Add an E2E test for unauthenticated access that asserts the status and the absence of content.
+Not covered: the production block is verified by a manual probe and a unit test of the matcher; E2E runs with
+             `APP_ENV` unset, so CI does not exercise it.
+Related task: T-103, T-104, T-107
+Related files: src/proxy.ts, src/lib/preview-routes.ts, src/app/design-system/layout.tsx
+```
+
+### ISSUE-010 — No route is static
+
+```text
+Status: OPEN (accepted trade-off)
+Severity: LOW
+Area: Performance
+First detected: 2026-10-11 (T-103)
+Actual: A per-request nonce requires dynamic rendering (Next.js CSP guide), so the root layout sets
+        `instant = false` and reads `headers()`. All 6 routes are server-rendered on demand; `cacheComponents`
+        provides no static shell. `"use cache"` for data is unaffected.
+Impact: Higher server cost per page view; no CDN caching of HTML. Not measured (NFR-02 has no baseline yet).
+Proposed fix: None now — the authenticated app is dynamic anyway. If public marketing pages are added, serve
+        them from a route group with a hash-based (SRI) policy instead of a nonce.
+Related files: src/app/layout.tsx, src/proxy.ts
 ```
 
 ### ISSUE-003 — .gitignore would ignore .env.example
@@ -1172,13 +1209,13 @@ None
 ## Open Medium
 
 ```text id="3j9p6c"
-ISSUE-002 (MITIGATED)
+ISSUE-002 (MITIGATED), ISSUE-009 (MITIGATED)
 ```
 
 ## Open Low
 
 ```text id="6x2r8d"
-ISSUE-004 (b only), ISSUE-006, ISSUE-007, ISSUE-008
+ISSUE-004 (b only), ISSUE-006, ISSUE-007, ISSUE-010
 ```
 
 ## Blocked
@@ -1196,7 +1233,7 @@ None
 ## Last Updated
 
 ```text
-2026-10-10
+2026-10-11
 ```
 
 Create or update `docs/ai/KNOWN_ISSUES.md`.

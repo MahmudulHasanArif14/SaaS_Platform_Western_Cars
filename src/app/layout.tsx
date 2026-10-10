@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { headers } from "next/headers";
 
+import { StyleNonce } from "@/components/style-nonce";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { APP_NAME } from "@/lib/app";
+import { NONCE_HEADER } from "@/lib/security/headers";
 
 import "./globals.css";
 
@@ -23,7 +26,13 @@ export const metadata: Metadata = {
   description: "Company infrastructure and operations platform.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+// A nonce-based CSP needs every route rendered per request, so no route has a
+// static shell. Without this the build rejects the `headers()` call below.
+export const instant = false;
+
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const nonce = (await headers()).get(NONCE_HEADER) ?? undefined;
+
   return (
     // next-themes sets the theme class on <html> before hydration.
     <html
@@ -32,7 +41,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <ThemeProvider>
+        <StyleNonce nonce={nonce} />
+        <ThemeProvider nonce={nonce}>
           <TooltipProvider>{children}</TooltipProvider>
           <Toaster />
         </ThemeProvider>

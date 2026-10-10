@@ -115,3 +115,30 @@ returns 404 when `APP_ENV=production`; the real `(dashboard)/[orgSlug]` layout w
 Reason: axe-verified AA contrast; no unauthenticated "app" pages that imply functionality that does not exist.
 Security impact: preview routes contain sample content only and are not served in production.
 Cost impact: none. Migration impact: none.
+
+### 2026-10-11 — Content Security Policy and dynamic rendering (T-103)
+
+Decision: A per-request nonce CSP is set in `src/proxy.ts` (`script-src 'self' 'nonce-…' 'strict-dynamic'`), with
+the static headers of TRD §12 in `next.config.ts`. To make the nonce usable, the root layout sets
+`instant = false` and reads `headers()`, so every route is rendered per request. `cacheComponents` stays enabled.
+Three deliberate relaxations, all on styles, none on scripts:
+
+| Relaxation | Why |
+|---|---|
+| `style-src-attr 'unsafe-inline'` | React renders the `style` prop as an attribute on the server (sidebar width variables, toasts, Radix). `<style>` elements and stylesheets stay nonce-only |
+| Two `sha256-…` hashes in `style-src-elem` | `sonner` injects its stylesheet from JavaScript and has no nonce option. A unit test recomputes the hashes from the installed package |
+| `'unsafe-eval'` and `style-src 'unsafe-inline'` under `next dev` only | Required by React's dev tooling (Next.js CSP guide) |
+
+`upgrade-insecure-requests` is sent only when `APP_ENV` is `staging` or `production`, so local http keeps working.
+The proxy also runs on prefetch requests (the Next.js guide excludes them) because it enforces the production
+block on preview routes and a request header must not be able to skip it.
+New runtime dependency: `get-nonce` ^1.0.1 — already installed as a dependency of Radix's scroll lock; made direct
+so the app can hand it the nonce (`src/components/style-nonce.tsx`).
+Alternatives considered: `style-src 'unsafe-inline'` (simpler, allows injected `<style>` elements); hash-based CSP
+via experimental SRI (keeps static rendering, but TRD §12 specifies a nonce and the feature is experimental);
+disabling `cacheComponents` (not needed — `instant = false` is the documented opt-out).
+Security impact: inline scripts, inline event handlers and injected `<style>` elements are blocked (E2E tests).
+Residual: an HTML-injection bug could still set inline `style` attributes; `img-src` / `connect-src` limit what
+those can load. No violation reporting yet.
+Cost impact: no static HTML; every page view is server-rendered (KNOWN_ISSUES ISSUE-010).
+Migration impact: every new third-party origin must be added to the policy in `src/lib/security/headers.ts`.
