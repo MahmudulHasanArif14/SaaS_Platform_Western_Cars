@@ -743,3 +743,27 @@ backup restore test
 ```
 
 Keep this document factual and concise.
+
+Create or update `docs/ai/KNOWN_ISSUES.md`.
+
+Inspect actual repository evidence, failing tests, TODOs, incomplete integrations, and documented blockers.
+
+Use a structured issue register with:
+
+- Issue ID and title.
+- Category and severity.
+- Affected component or workflow.
+- Actual observed behavior.
+- Reproduction steps or supporting evidence.
+- Expected behavior.
+- Security, data, user, or operational impact.
+- Workaround, if verified.
+- Owner or responsible role.
+- Status: OPEN, INVESTIGATING, BLOCKED, FIXED_PENDING_VERIFICATION, or VERIFIED_RESOLVED.
+- Related task and resolution evidence.
+
+Do not invent bugs to populate the file. If no issues are verified, state that no verified issues were identified during the inspection and list areas not yet assessed.
+
+Distinguish bugs from planned functionality, unresolved design decisions, and environmental setup problems.
+
+Never mark an issue resolved solely because code was changed. Require appropriate verification.

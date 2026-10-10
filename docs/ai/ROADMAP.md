@@ -1857,3 +1857,49 @@ Production-ready
 ```
 
 A feature is considered complete only when its implementation, authorization, error handling, testing, documentation, and operational requirements have been appropriately verified.
+
+Create or update `docs/ai/ROADMAP.md`.
+
+Inspect the repository and master specification before planning. Build a phased roadmap with dependencies, acceptance criteria, risks, and release gates.
+
+Use these proposed phases, adjusting them to match verified existing progress:
+
+P0 — Repository discovery, documentation, development workflow, CI, environment setup, and baseline tests.
+
+P1 — Authentication, multi-tenancy, memberships, role and permission model, RLS, audit logging, and database migration discipline.
+
+P2 — Core operations: CRM, customers, staff, teams, tasks, projects, assignments, approvals, and notifications.
+
+P3 — Infrastructure operations: domain inventory, hosting projects, environments, deployment history, GitHub/Vercel/Cloudflare/cPanel/registrar adapters, and safe domain workflows.
+
+P4 — Payments: provider abstraction, supported Stripe/Dojo integrations, payment links, webhook verification, idempotency, reconciliation, and refund controls.
+
+P5 — Customer support, ticket lifecycle, internal notes, customer communication, SLAs, and escalation.
+
+P6 — Chat, realtime collaboration, notifications, and WebRTC audio/video where requirements and infrastructure are verified.
+
+P7 — Restricted HR/salary workflows, approvals, access reviews, and audit.
+
+P8 — Production hardening: monitoring, durable jobs, backups, restore exercises, security testing, accessibility, performance, incident response, and release readiness.
+
+P9 — Separate AI website-builder and customer hosting product: plans, verified payments, quotas, AI generation, editing, previews, publishing, custom domains, SSL, deployment operations, billing, and customer support.
+
+P10 — Further registrar, hosting, and website-management capabilities only after product validation and cost analysis.
+
+For each phase specify:
+
+- Objective and scope.
+- Prerequisites.
+- Deliverables.
+- Security requirements.
+- Automated tests.
+- Acceptance criteria.
+- Operational and cost considerations.
+- Exit gate.
+- Explicitly excluded work.
+
+Do not treat a phase as completed without evidence. Separate planned, in progress, blocked, and verified complete.
+
+Make CURRENT_TASK.md the single source of truth for the one task currently authorized. Recommend one next task at a time.
+
+Do not begin implementation.

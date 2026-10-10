@@ -1629,3 +1629,31 @@ Recovery
 ```
 
 Security is a continuous property of the system, not a final checklist.
+
+Create or update `docs/ai/THREAT_MODEL.md`.
+
+Use the existing architecture and security baseline to build a practical threat model.
+
+Include:
+
+- System assets, trust boundaries, actors, entry points, data flows, and privileged operations.
+- Tenant-to-tenant data leakage.
+- Unauthorized role escalation and broken object-level authorization.
+- Supabase RLS mistakes and service-role misuse.
+- Session theft, credential compromise, and exposed integration tokens.
+- Payment forgery, replayed webhooks, duplicate processing, unauthorized refunds, and entitlement manipulation.
+- DNS takeover, registrar compromise, unsafe record changes, and accidental mail disruption.
+- Deployment compromise, repository token abuse, malicious build steps, and secret leakage.
+- Malicious uploads, SSRF, injection, and denial of service.
+- Chat-room information leakage, WebRTC signaling abuse, and unauthorized attachment access.
+- Unauthorized access to employee and salary data.
+- Future AI-builder threats: malicious prompts, unsafe generated code, cross-tenant preview access, resource exhaustion, abusive publishing, domain hijacking, and generated-site vulnerabilities.
+- Backup theft, destructive administrative actions, and insufficient incident visibility.
+
+Use a threat register with identifier, asset, scenario, likelihood, impact, severity, existing controls, required mitigations, verification tests, owner, and status.
+
+Prioritize by realistic business impact. Include prevention, detection, response, and recovery.
+
+Reference SECURITY_BASELINE.md and ARCHITECTURE.md.
+
+Do not claim a threat is mitigated unless the control is implemented and evidence exists. Mark unknowns and open risks clearly. Do not make code changes.

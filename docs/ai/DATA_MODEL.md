@@ -2188,3 +2188,39 @@ Audit
 ```
 
 The objective is a database that remains safe even when the client is malicious, buggy, outdated, or completely bypassed.
+
+Create or update `docs/ai/DATA_MODEL.md`.
+
+Inspect existing Supabase schemas, migrations, generated types, database policies, and application data access before documenting anything.
+
+Separate the existing verified schema from the proposed future schema.
+
+For each entity, document its purpose, fields, primary key, foreign keys, uniqueness constraints, indexes, tenant ownership, sensitive fields, lifecycle, and access rules.
+
+Evaluate entities for:
+
+- Organizations, memberships, users, roles, permissions, and custom role assignments.
+- Customers, contacts, CRM records, documents, and activities.
+- Employees, teams, reporting relationships, and employment status.
+- Tasks, projects, assignments, dependencies, comments, checklists, and approvals.
+- Chatrooms, memberships, messages, attachments, reactions, and read state.
+- Support tickets, messages, internal notes, assignments, SLAs, and escalations.
+- Salary records, pay periods, payment status, approvals, and audit history.
+- Payment providers, payment links, payment attempts, webhook events, refunds, and reconciliation.
+- Domains, registrars, DNS providers, DNS change requests, verification, renewals, and SSL.
+- Websites, hosting projects, environments, deployments, build logs, and deployment history.
+- Provider connections, encrypted credential references, sync state, jobs, retries, and integration health.
+- Notifications, audit events, incidents, and monitoring records.
+- Future website-builder projects, site versions, generation jobs, previews, hosting plans, subscriptions, usage quotas, entitlements, custom-domain bindings, and publishing history.
+
+Do not blindly create every entity. Explain which are needed now, which are future scope, and which depend on business decisions.
+
+Define tenant-isolation invariants, RLS policies, server-side authorization, foreign-key strategies, data retention, soft-delete behavior, and sensitive-data access.
+
+Do not store card details, plaintext provider secrets, or credentials in ordinary application tables. Document secure credential references and secret rotation.
+
+Address webhook idempotency, duplicate events, concurrent updates, transaction boundaries, and durable job processing.
+
+Include an entity relationship diagram where helpful.
+
+Do not generate SQL migrations or claim RLS policies exist unless verified.

@@ -1,0 +1,1 @@
+{"nodes": [{"id": "docs_ai_decisions", "label": "Architectural Decisions", "file_type": "document", "source_file": "docs/ai/DECISIONS.md", "rationale": "Records major architectural changes and the criteria for documenting them."}], "edges": [], "hyperedges": []}

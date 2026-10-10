@@ -1,0 +1,1 @@
+{"nodes": [{"id": "docs_ai_data_model_tenant_isolation", "label": "Multi-Tenant Isolation", "file_type": "concept", "source_file": "docs/ai/DATA_MODEL.md", "rationale": "Organization boundaries are foundational; enforced via organization_id, RLS, and server-side authorization to prevent cross-tenant data leakage."}], "edges": [], "hyperedges": []}

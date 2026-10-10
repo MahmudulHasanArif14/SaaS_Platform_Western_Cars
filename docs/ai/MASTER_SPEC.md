@@ -1,4 +1,3 @@
-
 # MASTER IMPLEMENTATION PROMPT
 
 ## Production-Grade Multi-Tenant Company Operations, Staff, CRM, Website, Hosting, Domain, Support, Payments & Communication Platform
@@ -671,20 +670,24 @@ Example:
 ## 2026-10-08
 
 Completed:
+
 - Authentication foundation
 - Supabase SSR setup
 - Route protection
 
 Tests:
+
 - typecheck: pass
 - lint: pass
 - build: pass
 
 Remaining:
+
 - MFA
 - RBAC
 
 Next:
+
 - Organization and permission model
 ```
 
@@ -1005,7 +1008,7 @@ The server environment schema must reject missing required secrets in production
 Never casually use:
 
 ```typescript
-process.env.SOME_SECRET
+process.env.SOME_SECRET;
 ```
 
 throughout the application.
@@ -1223,17 +1226,17 @@ lib/rbac/
 Implement reusable functions such as:
 
 ```typescript
-requireAuth()
-requireOrganizationMembership()
-requirePermission()
-requireRole()
-requireStepUpAuth()
-canAccessClient()
-canAccessWebsite()
-canAccessTask()
-canAccessSupportTicket()
-canAccessSalaryRecord()
-canAccessSecret()
+requireAuth();
+requireOrganizationMembership();
+requirePermission();
+requireRole();
+requireStepUpAuth();
+canAccessClient();
+canAccessWebsite();
+canAccessTask();
+canAccessSupportTicket();
+canAccessSalaryRecord();
+canAccessSecret();
 ```
 
 Every server action and route handler must enforce authorization independently.
@@ -1687,10 +1690,10 @@ Example:
 
 ```typescript
 interface HostingProvider {
-  getProjects(): Promise<Project[]>
-  getProject(id: string): Promise<Project>
-  getDeployments(id: string): Promise<Deployment[]>
-  triggerDeployment(input: TriggerDeploymentInput): Promise<DeploymentResult>
+  getProjects(): Promise<Project[]>;
+  getProject(id: string): Promise<Project>;
+  getDeployments(id: string): Promise<Deployment[]>;
+  triggerDeployment(input: TriggerDeploymentInput): Promise<DeploymentResult>;
 }
 ```
 
@@ -2717,12 +2720,14 @@ Create a common interface:
 
 ```typescript
 interface PaymentProvider {
-  createPaymentRequest(input: CreatePaymentRequestInput): Promise<PaymentLinkResult>
-  getPaymentStatus(reference: string): Promise<PaymentStatus>
-  cancelPayment(reference: string): Promise<void>
-  verifyWebhook(request: Request): Promise<VerifiedWebhook>
-  handleWebhook(event: VerifiedWebhook): Promise<void>
-  reconcile(reference: string): Promise<PaymentStatus>
+  createPaymentRequest(
+    input: CreatePaymentRequestInput,
+  ): Promise<PaymentLinkResult>;
+  getPaymentStatus(reference: string): Promise<PaymentStatus>;
+  cancelPayment(reference: string): Promise<void>;
+  verifyWebhook(request: Request): Promise<VerifiedWebhook>;
+  handleWebhook(event: VerifiedWebhook): Promise<void>;
+  reconcile(reference: string): Promise<PaymentStatus>;
 }
 ```
 
@@ -6500,3 +6505,38 @@ Keep production deployment in mind from the first migration.
 Keep Claude's persistent context updated so future sessions do not waste tokens rediscovering the architecture.
 
 Never trade correctness for speed.
+
+Create or update `docs/ai/MASTER_SPEC.md`.
+
+First inspect the repository, existing documentation, and CLAUDE.md. Preserve existing verified requirements. Clearly distinguish planned functionality from implemented functionality.
+
+Write a comprehensive master specification for a multi-tenant company operations and infrastructure management platform, with a separate future customer-facing AI website builder and hosting product.
+
+Include:
+
+1. Product vision, goals, non-goals, and success criteria.
+2. User types: platform owner, organization administrator, manager, employee, finance operator, infrastructure operator, support agent, and external customer.
+3. Organization and tenant isolation, role-based permissions, and custom roles.
+4. CRM, customer records, documents, notes, and activity history.
+5. Employee directory, teams, reporting relationships, assignments, and offboarding.
+6. Tasks, projects, priorities, due dates, dependencies, checklists, approvals, recurring tasks, and notifications.
+7. Internal chatrooms, direct messages, attachments, mentions, read receipts, presence, and audio/video calls.
+8. Customer support tickets, SLAs, internal notes, escalation, customer replies, attachments, and customer portals.
+9. Salary and payroll-record tracking, payment periods, paid/unpaid states, approvals, and restricted access. Do not assume tax or payroll-provider functionality without explicit requirements.
+10. Payment provider abstraction for Stripe and Dojo where supported, payment links, signed webhooks, idempotency, reconciliation, refunds, and audit history.
+11. Domains, registrars, DNS providers, DNS changes, expiry, renewal, SSL, hosting projects, environments, deployments, and rollback.
+12. GitHub, Vercel, Cloudflare, cPanel, registrar, email, monitoring, and other integration boundaries.
+13. Monitoring, operational alerts, incident handling, backup, disaster recovery, and audit logs.
+14. Nonfunctional requirements: security, accessibility, performance, reliability, maintainability, observability, and cost control.
+15. User journeys, permission requirements, error conditions, acceptance criteria, and release gates.
+16. Integration assumptions, dependencies, unresolved business decisions, and out-of-scope capabilities.
+
+Specify that the customer-facing AI website builder is a later phase, after foundational platform security and operational capabilities have passed their release gates.
+
+For that later product, define the intended journey: registration, workspace creation, plan selection, payment verification, AI generation, editing, preview, publishing, platform subdomain, custom domain verification, SSL, deployment monitoring, usage limits, billing, and support.
+
+Do not assume AI generation, hosting, SSL, custom domains, or third-party integrations are free. Require verification of pricing, commercial-use terms, quotas, and provider capabilities.
+
+Do not claim features are implemented based on requirements alone. Mark every requirement as proposed, existing and verified, partially implemented, or not yet verified where appropriate.
+
+Link to supporting architecture, security, design, data model, roadmap, and product documents. Do not write application code or database migrations.

@@ -1101,3 +1101,26 @@ PRODUCTION VERIFIED
 ```
 
 only after real production verification.
+
+Create or update `docs/ai/INTEGRATION_STATUS.md`.
+
+Inventory external integrations that exist or are planned. Inspect the repository and available configuration before assigning a status.
+
+Potential integrations include Supabase, GitHub, Vercel, Cloudflare, cPanel, domain registrars, DNS providers, Stripe, Dojo, email delivery, monitoring, analytics, WebRTC/STUN/TURN, and future AI-generation or hosting providers.
+
+For each integration document:
+
+- Provider and business purpose.
+- Current status: PLANNED, DESIGNED, CONFIGURED, CONNECTED, VERIFIED, DEGRADED, EXPIRED, REVOKED, DISCONNECTED, BLOCKED, UNSUPPORTED, or MANUAL_REQUIRED.
+- Verified supported capabilities.
+- Required credentials and permission scopes, without storing their values.
+- Environment and configuration location.
+- Webhook or event handling requirements.
+- Rate limits, pricing, account prerequisites, and known restrictions where verified.
+- Last verification date and evidence.
+- Failure modes, retries, reconciliation, monitoring, and recovery.
+- Outstanding implementation work.
+
+Use CONNECTED or VERIFIED only when evidence supports the status. A package installed in the repository does not prove an account is connected.
+
+Do not fabricate URLs, API endpoints, provider permissions, account status, or successful tests. Flag all unverified details for investigation.
