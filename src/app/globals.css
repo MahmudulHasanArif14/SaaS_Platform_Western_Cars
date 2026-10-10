@@ -41,7 +41,8 @@
   --accent-foreground: var(--text);
   --destructive: var(--danger);
   --destructive-foreground: var(--danger-foreground);
-  --input: var(--border);
+  /* Form control boundary: 3:1 against background and surfaces (WCAG 1.4.11). */
+  --input: #7f8792;
   --ring: var(--primary);
   --sidebar: var(--surface);
   --sidebar-foreground: var(--text);
@@ -70,6 +71,7 @@
   /* White on #f0525a is 3.5:1; near-black passes 4.5:1. */
   --danger-foreground: #0a0b0d;
   --info: #7c8794;
+  --input: #6b7380;
 }
 
 @theme inline {

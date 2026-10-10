@@ -37,12 +37,22 @@ type CspOptions = {
   isDevelopment: boolean;
   // Staging and production are always served over https.
   upgradeInsecureRequests: boolean;
+  // Extra origins the browser may call, e.g. the Supabase project.
+  connectSources?: readonly string[];
 };
+
+// The Supabase API origin and its WebSocket (Realtime) equivalent.
+export function supabaseConnectSources(url: string | undefined): string[] {
+  if (!url) return [];
+  const { origin } = new URL(url);
+  return [origin, origin.replace(/^http/, "ws")];
+}
 
 export function buildContentSecurityPolicy({
   nonce,
   isDevelopment,
   upgradeInsecureRequests,
+  connectSources = [],
 }: CspOptions): string {
   const styleHashes = SONNER_STYLE_HASHES.map((hash) => `'${hash}'`).join(" ");
   const directives = [
@@ -60,7 +70,7 @@ export function buildContentSecurityPolicy({
         ]),
     "img-src 'self' blob: data:",
     "font-src 'self'",
-    "connect-src 'self'",
+    ["connect-src 'self'", ...connectSources].join(" "),
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",

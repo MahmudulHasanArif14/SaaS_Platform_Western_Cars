@@ -7,8 +7,10 @@ import {
   buildContentSecurityPolicy,
   generateNonce,
   SONNER_STYLE_HASHES,
+  supabaseConnectSources,
   STATIC_SECURITY_HEADERS,
 } from "@/lib/security/headers";
+import { sessionCookieOptions } from "@/lib/supabase/cookies";
 
 const production = {
   nonce: "abc123",
@@ -120,5 +122,52 @@ describe("STATIC_SECURITY_HEADERS", () => {
       "Permissions-Policy": "camera=(self), microphone=(self), geolocation=()",
       "X-Frame-Options": "DENY",
     });
+  });
+});
+
+describe("supabaseConnectSources", () => {
+  it("allows the project's API and Realtime origins only", () => {
+    expect(supabaseConnectSources("https://abc.supabase.co/rest/v1")).toEqual([
+      "https://abc.supabase.co",
+      "wss://abc.supabase.co",
+    ]);
+    expect(supabaseConnectSources("http://127.0.0.1:54321")).toEqual([
+      "http://127.0.0.1:54321",
+      "ws://127.0.0.1:54321",
+    ]);
+    expect(supabaseConnectSources(undefined)).toEqual([]);
+  });
+
+  it("is added to connect-src and nowhere else", () => {
+    const csp = buildContentSecurityPolicy({
+      ...production,
+      connectSources: supabaseConnectSources("https://abc.supabase.co"),
+    });
+
+    expect(directive(csp, "connect-src")).toBe(
+      "connect-src 'self' https://abc.supabase.co wss://abc.supabase.co",
+    );
+    expect(csp.split("abc.supabase.co").length - 1).toBe(2);
+    expect(
+      directive(buildContentSecurityPolicy(production), "connect-src"),
+    ).toBe("connect-src 'self'");
+  });
+});
+
+describe("sessionCookieOptions (SEC-A04, SEC-C03)", () => {
+  it("forces httpOnly and SameSite=Lax whatever the library asks for", () => {
+    expect(
+      sessionCookieOptions(
+        { httpOnly: false, sameSite: "none", maxAge: 100, path: "/x" },
+        true,
+      ),
+    ).toEqual({
+      httpOnly: true,
+      sameSite: "lax",
+      secure: true,
+      maxAge: 100,
+      path: "/",
+    });
+    expect(sessionCookieOptions({}, false).secure).toBe(false);
   });
 });

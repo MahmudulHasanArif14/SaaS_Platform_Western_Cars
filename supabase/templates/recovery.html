@@ -1,0 +1,12 @@
+<h2>Reset your password</h2>
+<p>
+  Use the link below to choose a new password. It can be used once and expires
+  in one hour.
+</p>
+<p>
+  <a
+    href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery"
+    >Choose a new password</a
+  >
+</p>
+<p>If you didn't ask for this, you can ignore this email.</p>
