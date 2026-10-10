@@ -6,20 +6,15 @@ Verified facts only (tools run on 2026-10-10). Anything not verified is marked `
 
 | Field | Value |
 |---|---|
-| Branch | `feature/t-100-tooling-ci` (local; not pushed) |
-| Commit | `154af40` — `docs: record Day 0 discovery, ADR stubs and D1 decision` |
+| Branch | `feature/t-101-env-validation` (from `origin/main`; pushed) |
+| Commit | `3c6b99c` — merge of PR #1 (`feature/t-100-tooling-ci`) into `main` |
 | Remote | `origin` → `github.com/MahmudulHasanArif14/SaaS_Platform_Western_Cars` |
-| Working tree | DIRTY — all of T-100 is uncommitted |
+| Working tree | T-101 committed on the branch; only the pre-existing items below remain uncommitted |
 
-Uncommitted (T-100):
+Uncommitted:
 
-- Modified: `.gitignore`, `eslint.config.mjs`, `next.config.ts`, `package.json`, `package-lock.json`, `tsconfig.json`, `CLAUDE.md`
-- Renamed (staged): `app/{favicon.ico,globals.css,layout.tsx,page.tsx}` → `src/app/`
-- New: `.github/workflows/ci.yml`, `.github/dependabot.yml`, `.nvmrc`, `.prettierrc.json`, `.prettierignore`,
-  `playwright.config.ts`, `vitest.config.mts`, `tests/e2e/smoke.spec.ts`, `tests/security/lint-guards.test.ts`
-- Docs: `docs/ai/{CURRENT_TASK,WORKSPACE_STATE,SESSION_LOG,ROADMAP,KNOWN_ISSUES,DECISIONS,PRODUCTION_READINESS}.md`,
-  `docs/ai/decisions/ADR-001-modular-monolith.md`, `docs/security/SECURITY_CHECKLIST.md`
 - Deleted (pre-existing, not by these sessions): `public/{file,globe,next,vercel,window}.svg`
+- `graphify-out/cache/last_query_stamp` (tool side effect)
 
 ## Toolchain
 
@@ -40,7 +35,9 @@ Uncommitted (T-100):
 | Supabase CLI | NOT INSTALLED | shell (Day 0) |
 | Vercel CLI | NOT INSTALLED | session hook |
 
-Not installed: Supabase JS / `@supabase/ssr`, shadcn/ui, Radix, Lucide, `next-themes`, Zod, React Hook Form,
+Runtime dependency added in T-101: Zod 4.6.5.
+
+Not installed: Supabase JS / `@supabase/ssr`, shadcn/ui, Radix, Lucide, `next-themes`, React Hook Form,
 Stripe SDK, Testing Library, Sentry.
 
 ## Repository contents
@@ -49,41 +46,44 @@ Stripe SDK, Testing Library, Sentry.
 |---|---|
 | App code | `src/app/{layout.tsx,page.tsx,globals.css,favicon.ico}` — unmodified create-next-app starter |
 | Routes | `/` and `/_not-found` only (both static) — from build output |
-| `src/modules`, `src/lib`, `src/components` | DO NOT EXIST yet |
+| `src/lib/env` | `schema.ts`, `server.ts`, `client.ts`; validated from `next.config.ts`. No consumers yet |
+| `src/modules`, `src/components` | DO NOT EXIST yet |
 | Auth / middleware / proxy / API routes / server actions | NONE |
 | `supabase/` (config, migrations, RLS policies, seed) | DOES NOT EXIST |
-| Tests | `tests/security/lint-guards.test.ts` (6), `tests/e2e/smoke.spec.ts` (2). No unit, integration or RLS tests |
-| CI | `.github/workflows/ci.yml` (quality + e2e jobs), `.github/dependabot.yml` — never run on GitHub |
+| Tests | `tests/unit/env.test.ts` (16), `tests/security/lint-guards.test.ts` (7), `tests/e2e/smoke.spec.ts` (2). No integration or RLS tests |
+| CI | `.github/workflows/ci.yml` (quality + e2e jobs), `.github/dependabot.yml` — green on PR #1 and `main` |
 | `vercel.json` / `vercel.ts` | NONE |
-| `.env.example` / `.env*` | NONE present |
-| `.gitignore` | ignores `.env*` with no `!.env.example` exception (ISSUE-003) |
+| `.env.example` / `.env*` | `.env.example` committed (names only). No other `.env*` files |
+| `.gitignore` | ignores `.env*`, allows `.env.example` |
 | `public/` | empty (5 starter SVGs deleted, uncommitted) |
 
 ## Commands (verified from `package.json`)
 
 `npm run dev` · `npm run build` · `npm run start` · `npm run lint` · `npm run typecheck` ·
-`npm run format` · `npm run format:check` · `npm test` · `npm run test:watch` · `npm run test:e2e`
+`npm run format` · `npm run format:check` · `npm test` · `npm run test:watch` · `npm run test:e2e` · `npm run check:bundle`
 
-## Last verification (2026-10-10, commit `154af40` + working tree)
+## Last verification (2026-10-10; local on `154af40` + T-100 tree, CI on `00caa8b` and `3c6b99c`)
 
 | Check | Command | Result | Notes |
 |---|---|---|---|
 | format | `npm run format:check` | PASS | |
 | lint | `npm run lint` | PASS | exit 0, no findings |
 | typecheck | `npm run typecheck` | PASS | `next typegen && tsc --noEmit` |
-| unit/security | `npm test` | PASS | 1 file, 6 tests |
+| unit/security | `npm test` | PASS | 2 files, 23 tests (T-101 tree) |
+| env gate | `APP_ENV=production npm run build` without variables | FAILS as required | passes with complete fake test values |
+| bundle scan | `npm run check:bundle` | PASS | 23 files; planted secret detected |
 | build | `npm run build` | PASS | no warnings; routes `/`, `/_not-found` |
 | e2e | `npm run test:e2e` | PASS | 2 tests, chromium, against production build |
 | audit (prod) | `npm audit --omit=dev --audit-level=high` | PASS | 0 vulnerabilities |
 | audit (full) | `npm audit` | FAIL | 5 high in dev lint chain (ISSUE-002) |
-| CI on GitHub | — | NOT RUN | branch not pushed |
+| CI on GitHub | runs 38038898143 (PR #1), 38038935415 (`main`) | PASS | T-100 only; T-101 steps NOT RUN on GitHub |
 | supabase / RLS tests | — | NOT RUN | none exist |
 
 ## Environments / deployment / integrations
 
 | Item | State |
 |---|---|
-| Local env vars | none defined; none required by current code |
+| Local env vars | none defined; none required when `APP_ENV` is local/test |
 | Database | NONE (no Supabase project linked in repo) |
 | Deployment | UNKNOWN — no deploy config in repo; no evidence of a Vercel project |
 | Staging / production | UNKNOWN — no evidence either exists |
@@ -93,15 +93,16 @@ Stripe SDK, Testing Library, Sentry.
 ## Completed milestones (with evidence)
 
 - T-000 repository inventory + checks (commit `154af40`).
+- T-100 tooling + CI skeleton — PR #1 merged to `main` as `3c6b99c` (2026-10-10); CI green.
 - ADR-001 ACCEPTED (modular monolith, `src/`); ADR-002..008 `Decision: PENDING`.
 
 ## Current task
 
-T-100 — implemented and locally verified; not COMPLETED until CI is green on GitHub. See `CURRENT_TASK.md`.
+T-101 — implemented and locally verified; not COMPLETED until CI is green on GitHub. See `CURRENT_TASK.md`.
 
 ## Blockers
 
-- T-100 completion: commit + push need owner go-ahead.
+- T-101 completion: PR + green CI run.
 - Org-creation mode (self-serve vs provisioned) open before T-107.
 - Supabase CLI not installed — required from T-104/T-105.
 
@@ -110,6 +111,7 @@ T-100 — implemented and locally verified; not COMPLETED until CI is green on G
 1. `.claude/settings.json` allows `pnpm lint/test/typecheck/build`; the package manager is npm (ISSUE-004b).
 2. `docs/ai/COST_MATRIX.md` (Day 0 required output) does not exist (ISSUE-006).
 3. Several `docs/ai/*.md` files end with leftover generation-prompt text (ISSUE-006).
+4. Open Dependabot PRs: `typescript` 7.0.2 (CI failing), `eslint` 10.12.0, `@types/node` 26.6.4 (conflicts with Node 22 pin).
 
 ## Last updated
 

@@ -2,64 +2,73 @@
 
 ## Stage
 
-Phase 1 — T-100: Tooling and CI skeleton
+Phase 1 — T-101: Environment validation (`lib/env`) + `.env.example`
 
 ## Status
 
 IMPLEMENTED, locally verified — NOT yet COMPLETED (2026-10-10).
 
-The acceptance criterion is "CI green on empty app". The workflow has never run on GitHub: the work is
-uncommitted on `feature/t-100-tooling-ci` and has not been pushed. Committing and pushing need owner go-ahead.
+The acceptance criterion ("build fails on missing server var in prod mode") passes locally. Not complete because
+the new CI steps have not yet run green on GitHub (branch `feature/t-101-env-validation`).
+
+Previous task: T-100 COMPLETED 2026-10-10 — PR #1 merged to `main` as `3c6b99c`; CI runs 38038898143 (PR) and
+38038935415 (`main`) green on both jobs.
 
 ## Scope delivered
 
 | Item | Evidence |
 |---|---|
-| Strict TS (`noUncheckedIndexedAccess`, `noImplicitOverride`, `noFallthroughCasesInSwitch`) | `tsconfig.json` |
-| `src/` layout, `@/*` → `./src/*` | `src/app/*`, ADR-001 (ACCEPTED) |
-| ESLint `no-restricted-imports` for admin client / provider adapters / provider SDKs in UI code (TR-001) | `eslint.config.mjs` |
-| ESLint `react/no-danger` (no `dangerouslySetInnerHTML`) | `eslint.config.mjs` |
-| Guards proven by tests | `tests/security/lint-guards.test.ts` (6 tests) |
-| Prettier + `eslint-config-prettier` | `.prettierrc.json`, `.prettierignore` |
-| Vitest | `vitest.config.mts`, `npm test` |
-| Playwright (runs against a production build) | `playwright.config.ts`, `tests/e2e/smoke.spec.ts` |
-| GitHub Actions: quality job + E2E job | `.github/workflows/ci.yml` |
-| Audit gate (production deps) + weekly Dependabot (SEC-D05) | `ci.yml`, `.github/dependabot.yml` |
-| Node pinned | `.nvmrc` (22), `engines.node >=22.12.0` |
-| Scripts `typecheck`, `format`, `format:check`, `test`, `test:watch`, `test:e2e` | `package.json`, `CLAUDE.md` |
+| Zod schemas + parsers, no side effects | `src/lib/env/schema.ts` |
+| Server env (`import "server-only"`) | `src/lib/env/server.ts` |
+| Client env (static `NEXT_PUBLIC_*` references) | `src/lib/env/client.ts` |
+| Validation at build / start / dev | `next.config.ts` calls `validateEnv(process.env)` |
+| `APP_ENV` = local, test, staging, production (default local); staging/production require all variables and an https app URL | `schema.ts`, `tests/unit/env.test.ts` |
+| `VERCEL_ENV=production` requires `APP_ENV=production` | `schema.ts`, test |
+| Secret key rejected in `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `schema.ts`, test |
+| Error messages list names only, never values | test |
+| ESLint: no raw `process.env` in `src/**` outside `src/lib/env` | `eslint.config.mjs`, `tests/security/lint-guards.test.ts` |
+| Client-bundle secret scan (SEC-C02) | `scripts/check-client-bundle.mjs`, `npm run check:bundle` |
+| CI: build-must-fail step + bundle scan | `.github/workflows/ci.yml` |
+| `.env.example` (names only) + `!.env.example` in `.gitignore` (ISSUE-003) | `.env.example`, `.gitignore` |
+| Zod runtime dependency recorded | `DECISIONS.md` |
 
-## Checks run locally (2026-10-10, `154af40` + working tree, Node v22.23.3, npm 10.9.9)
+Validated now: `APP_ENV`, `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`,
+`SUPABASE_SECRET_KEY`. The other TRD §14 names are added to the schema when their module is built.
+
+## Checks run locally (2026-10-10, `3c6b99c` + working tree, Node v22.23.3)
 
 | Check | Result |
 |---|---|
-| `npm run format:check` | PASS |
-| `npm run lint` | PASS |
-| `npm run typecheck` | PASS |
-| `npm test` | PASS — 1 file, 6 tests |
-| `npm run build` | PASS — routes `/`, `/_not-found`; workspace-root warning gone |
-| `npm run test:e2e` | PASS — 2 tests (chromium) |
+| `npm run format:check` · `lint` · `typecheck` | PASS |
+| `npm test` | PASS — 2 files, 23 tests |
+| `APP_ENV=production npm run build`, no variables | FAILS as required — lists the 4 missing names |
+| Same, only `SUPABASE_SECRET_KEY` missing | FAILS as required |
+| Same, complete (fake test values) | PASS |
+| `npm run build` (default, local) | PASS, no warnings |
+| `npm run check:bundle` | PASS — 23 files; a planted `sb_secret_` string was detected (exit 1) |
+| Probe: `lib/env/server` imported from a server component / a client component | builds / build fails (`server-only`) — probe reverted |
+| `npm run test:e2e` | PASS — 2 tests |
 | `npm audit --omit=dev --audit-level=high` | PASS — 0 vulnerabilities |
-| `npm audit` (full tree) | FAIL — 5 high, dev lint chain (ISSUE-002, not gated) |
-| GitHub Actions run | NOT RUN — not pushed |
+| GitHub Actions | NOT RUN yet for T-101 |
 
 ## Remaining to mark COMPLETED
 
-1. Commit the T-100 changes (owner go-ahead).
-2. Push the branch / open a PR and confirm both CI jobs are green.
-3. If CI fails on Linux, fix and re-verify.
+1. Open a PR for `feature/t-101-env-validation`; confirm CI green including the two new steps.
 
 ## Open items
 
-- `.claude/settings.json` still allowlists `pnpm …` commands; package manager is npm (ISSUE-004b) — left for the owner.
-- Dependabot will open PRs once the branch is merged to `main`.
-- ADR-002..008 still `Decision: PENDING`. `docs/ai/COST_MATRIX.md` still missing (ISSUE-006).
-- Org-creation mode (self-serve vs operator-provisioned) open before T-107.
+- Nothing consumes `serverEnv` / `clientEnv` yet (first consumer: Supabase clients, T-104/T-105). Supabase
+  variables are optional in local/test until then.
+- No production/staging environment exists; `APP_ENV` must be set there when one is created.
+- Dependabot PRs open (owner to review): `typescript` 7.0.2 — CI fails; `eslint` 10.12.0 — CI passes;
+  `@types/node` 26.6.4 — conflicts with the Node 22 pin.
+- `.claude/settings.json` still allowlists `pnpm …` (ISSUE-004b).
+- ADR-002..008 `Decision: PENDING`. `docs/ai/COST_MATRIX.md` missing (ISSUE-006).
 
 ## Recommended next task (NOT STARTED — requires explicit instruction)
 
-**T-101** — `lib/env` server/client Zod validation + `.env.example`. Satisfies TR §14, SEC-C02.
-Done when: build fails on a missing server var in prod mode. Also fixes ISSUE-003 (`!.env.example` in `.gitignore`).
-Adds a runtime dependency (Zod) — record in `DECISIONS.md`.
+**T-102** — Design tokens, `next-themes`, app shell (sidebar, topbar, ⌘K stub), base components.
+Done when: light/dark/mobile screenshots; axe clean. See `docs/plan/IMPLEMENTATION_PLAN.md` Phase 1.
 
 ## Do NOT implement yet
 

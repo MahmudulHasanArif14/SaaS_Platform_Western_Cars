@@ -106,7 +106,7 @@ Related decision: DECISIONS.md "CI audit gate scope"
 ## LOW
 
 ```text id="m7t3za"
-ISSUE-001, ISSUE-003, ISSUE-004, ISSUE-006 (ISSUE-005 RESOLVED)
+ISSUE-001, ISSUE-004, ISSUE-006 (ISSUE-003, ISSUE-005 RESOLVED)
 ```
 
 ### ISSUE-001 — Home page references deleted images
@@ -126,13 +126,15 @@ Related files: src/app/page.tsx, public/
 ### ISSUE-003 — .gitignore would ignore .env.example
 
 ```text
-Status: OPEN
+Status: RESOLVED
 Severity: LOW
 Area: Environment / repo hygiene
 First detected: 2026-10-10
-Actual: .gitignore has `.env*` with no `!.env.example` exception (SETUP.md §4 expects one). No .env files exist yet.
-Impact: The planned committed .env.example (T-101) would be silently ignored.
-Proposed fix: Add `!.env.example` in T-101.
+Last updated: 2026-10-10 (T-101)
+Resolution: `!.env.example` added to .gitignore and .env.example (names only) committed in T-101.
+Verification: `git status` shows .env.example tracked; `git check-ignore .env.local` still matches `.env*`.
+Note: .claude/settings.json denies the agent read/write on `.env.*`, which also matches .env.example; the file
+      was created at the owner's explicit request. Narrow the rule if the agent should maintain it.
 Related files: .gitignore
 ```
 
@@ -1147,7 +1149,7 @@ ISSUE-002 (MITIGATED)
 ## Open Low
 
 ```text id="6x2r8d"
-ISSUE-001, ISSUE-003, ISSUE-004 (b only), ISSUE-006
+ISSUE-001, ISSUE-004 (b only), ISSUE-006
 ```
 
 ## Blocked

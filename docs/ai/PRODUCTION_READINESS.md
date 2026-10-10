@@ -60,9 +60,9 @@ Never mark a feature production-ready based only on a successful local build.
 | Accessibility baseline    | NOT_STARTED |                  |
 | Error boundaries          | NOT_STARTED |                  |
 | Loading states            | NOT_STARTED |                  |
-| Environment validation    | NOT_STARTED |                  |
+| Environment validation    | UNIT_TESTED | `src/lib/env`, 16 unit tests; production build fails on missing variables (local, 2026-10-10). No deployed environment to verify against |
 | Git repository configured | NOT_STARTED |                  |
-| CI configured             | IMPLEMENTED | `.github/workflows/ci.yml`; all steps pass locally 2026-10-10; never run on GitHub |
+| CI configured             | IMPLEMENTED | `.github/workflows/ci.yml`; green on PR #1 and `main` (`3c6b99c`) 2026-10-10. Covers lint/type/unit/build/E2E smoke/prod audit only |
 
 ---
 

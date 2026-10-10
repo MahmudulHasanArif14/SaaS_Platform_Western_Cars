@@ -56,3 +56,29 @@ Reason: the 5 high advisories (`braces` → … → `eslint-config-next` 16.4.0)
 Alternatives considered: full-tree gate (CI permanently red); npm `overrides` for `braces` (unverified against `micromatch`'s pinned range).
 Security impact: dev-chain advisories are not gated; tracked as ISSUE-002 and by weekly Dependabot. Revisit when upstream ships a fix, then widen the gate to the full tree.
 Cost impact: none. Migration impact: none.
+
+### 2026-10-10 — Zod runtime dependency (T-101)
+
+Decision: Add `zod` (^4.6.5) as a runtime dependency for environment validation; it is also the planned
+validator for server-action / route-handler input (TRD §3).
+Alternatives considered: hand-written checks (no shared validator for later input validation); `@t3-oss/env-nextjs`
+(extra dependency on top of Zod for what is ~100 lines here).
+Security impact: none negative; `npm audit --omit=dev` = 0 vulnerabilities after install.
+Cost impact: none. Migration impact: none.
+
+### 2026-10-10 — Environment validation model (T-101)
+
+Decision: `APP_ENV` (`local` | `test` | `staging` | `production`, default `local`) selects strictness.
+`staging` and `production` require every validated variable and an https app URL; `local` and `test` only check
+the format of what is set. Validation runs in `next.config.ts`, so `next build`, `next start` and `next dev` fail
+fast. `VERCEL_ENV=production` without `APP_ENV=production` is rejected so a production deploy cannot fall back to
+the lenient rules. Only variables with an imminent consumer are validated; the rest of TRD §14 joins the schema
+with its module.
+Reason: `NODE_ENV` is `production` for every `next build` (including CI and E2E), so it cannot distinguish a real
+deployment from a local/CI build; requiring secrets there would force placeholder secrets into CI.
+Alternatives considered: key strictness on `NODE_ENV` (see reason); validate in `instrumentation.ts` only
+(runtime, not build time).
+Security impact: missing or malformed configuration stops the build instead of surfacing at runtime; error
+messages contain variable names only. Residual risk: a non-Vercel production host with `APP_ENV` unset gets the
+lenient rules — set `APP_ENV` explicitly in every deployed environment.
+Cost impact: none. Migration impact: deployed environments must define `APP_ENV`.
