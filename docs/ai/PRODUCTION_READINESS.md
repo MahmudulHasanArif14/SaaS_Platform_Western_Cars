@@ -62,7 +62,7 @@ Never mark a feature production-ready based only on a successful local build.
 | Loading states            | NOT_STARTED |                  |
 | Environment validation    | NOT_STARTED |                  |
 | Git repository configured | NOT_STARTED |                  |
-| CI configured             | NOT_STARTED |                  |
+| CI configured             | IMPLEMENTED | `.github/workflows/ci.yml`; all steps pass locally 2026-10-10; never run on GitHub |
 
 ---
 

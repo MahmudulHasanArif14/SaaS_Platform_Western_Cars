@@ -193,6 +193,152 @@ NOT_CONNECTED
 
 ---
 
+## SESSION-2026-10-10-1
+
+Date: 2026-10-10
+AI/Environment: Claude Code (Windows, local)
+Branch: main
+Commit: c7997c8 at start; 9227aab (5 approved skills) on branch chore/agent-skills
+Task: DAY 0 — repository discovery and documentation initialization (T-000)
+Objective: Record verified repo state, reconcile planning docs, create ADR stubs. No feature code.
+
+Completed:
+- Inventoried repo: create-next-app starter only (Next.js 16.4.0, React 19.3.0, TS 5.9.3, Tailwind 4.3.3, npm).
+- Ran checks and recorded results in WORKSPACE_STATE.md.
+- Reconciled planning docs with verified values (additive "Day 0" notes).
+- Created ADR-001..008 stubs (Decision: PENDING).
+- Ran `npx skills add vercel-labs/agent-skills` (project scope, copy mode) — left uncommitted for approval.
+
+Files Created:
+- docs/ai/decisions/ADR-001..008-*.md
+- .claude/skills/{deploy-to-vercel,vercel-cli-with-tokens,vercel-composition-patterns,vercel-optimize,vercel-react-best-practices,vercel-react-native-skills,vercel-react-view-transitions,web-design-guidelines,writing-guidelines}/ (by skills CLI, uncommitted)
+
+Files Modified:
+- docs/ai/WORKSPACE_STATE.md (rewritten with verified facts), CURRENT_TASK.md, SESSION_LOG.md, KNOWN_ISSUES.md, ROADMAP.md (Phase 0 status)
+- docs/product/PRD.md, docs/technical/{TRD,APP_FLOW,BACKEND_SCHEMA}.md, docs/design/UI_UX_DESIGN_BRIEF.md, docs/plan/IMPLEMENTATION_PLAN.md, docs/security/SECURITY_CHECKLIST.md
+- skills-lock.json (by skills CLI), graphify-out/cache/last_query_stamp (tool side effect)
+
+Files Deleted:
+- None by this session (5 `public/*.svg` deletions were already in the working tree)
+
+Database Changes:
+- None (no database exists)
+
+Integration Changes:
+- None
+
+Security Changes:
+- None. No secrets read or written; no `.env*` files exist.
+
+Tests:
+- `npm run lint` PASS · `npx tsc --noEmit` PASS · `npm test` FAIL (no script) · `npm audit` FAIL (5 high, dev chain)
+- `supabase status` NOT RUN (no `supabase/`, CLI not installed) · no unit/integration/RLS/E2E tests exist
+
+Build:
+- `npm run build` PASS (routes `/`, `/_not-found`)
+
+Deployment:
+- None
+
+Issues Discovered:
+- ISSUE-001..006 (KNOWN_ISSUES.md)
+
+Issues Resolved:
+- TRD §1 ADR number for job engine corrected (ADR-006 → ADR-003) to match TRD §16
+
+Known Blockers:
+- Org-creation mode undecided (T-107); Supabase CLI not installed (T-104/T-105)
+
+Decisions:
+- PRD D1 answered by owner: SaaS architecture with multi-tenancy foundation. ADR-001..008 still PENDING.
+
+Next Step:
+- Commit Day 0 docs when approved. Then T-100 on explicit instruction.
+
+Production Readiness:
+- NOT READY
+
+Integration Status:
+- NOT_CONNECTED (nothing implemented)
+
+Notes:
+- `docs/ai/COST_MATRIX.md` from the original Day 0 output list was not created.
+
+---
+
+## SESSION-2026-10-10-2
+
+Date: 2026-10-10
+AI/Environment: Claude Code (Windows, local)
+Branch: feature/t-100-tooling-ci
+Commit: 154af40 (all T-100 work uncommitted)
+Task: T-100 — strict TS, ESLint guards, Prettier, Vitest, Playwright, GitHub Actions skeleton
+Objective: Finish and verify the T-100 work already present in the working tree.
+
+Task:
+STATUS: INCOMPLETE
+
+Completed:
+- Verified the existing T-100 working-tree changes (src/ move, strict TS flags, ESLint TR-001 + react/no-danger
+  guards, Prettier, Vitest, Playwright, CI workflow, Node pin, scripts).
+- Added `.github/dependabot.yml` (weekly npm + github-actions, SEC-D05).
+- Confirmed `actions/{checkout,setup-node,upload-artifact}@v7` tags exist.
+- Recorded ADR-001 (ACCEPTED), dev-dependency and audit-gate decisions in DECISIONS.md.
+- Updated CLAUDE.md commands to npm.
+
+Files Created:
+- .github/dependabot.yml (this session); earlier T-100 work: .github/workflows/ci.yml, .nvmrc, .prettierrc.json,
+  .prettierignore, playwright.config.ts, vitest.config.mts, tests/e2e/smoke.spec.ts, tests/security/lint-guards.test.ts
+
+Files Modified:
+- CLAUDE.md, docs/ai/{CURRENT_TASK,WORKSPACE_STATE,SESSION_LOG,ROADMAP,KNOWN_ISSUES,DECISIONS,PRODUCTION_READINESS}.md,
+  docs/ai/decisions/ADR-001-modular-monolith.md, docs/security/SECURITY_CHECKLIST.md
+- Earlier T-100 work: .gitignore, eslint.config.mjs, next.config.ts, package.json, package-lock.json, tsconfig.json;
+  app/* renamed to src/app/*
+
+Database Changes:
+- None
+
+Integration Changes:
+- None
+
+Security Changes:
+- Lint guards for TR-001 (no admin client / provider adapter / provider SDK imports in UI code) and
+  `dangerouslySetInnerHTML`, each proven by a test. CI job has `permissions: contents: read`.
+- No secrets read or written; no `.env*` files exist.
+
+Tests:
+- `npm run format:check` PASS · `npm run lint` PASS · `npm run typecheck` PASS · `npm test` PASS (6 tests)
+- `npm run test:e2e` PASS (2 tests, chromium, production build)
+- `npm audit --omit=dev --audit-level=high` PASS (0) · `npm audit` full tree FAIL (5 high, ISSUE-002)
+- GitHub Actions: NOT RUN (branch not pushed)
+
+Build:
+- `npm run build` PASS, no warnings (routes `/`, `/_not-found`)
+
+Deployment:
+- None
+
+Issues Resolved:
+- ISSUE-005 (turbopack root warning). ISSUE-004 (a) and (c).
+
+Issues Updated:
+- ISSUE-002 MITIGATED (audit gate scoped to production deps). ISSUE-004 (b) still open.
+
+Remaining:
+- Commit, push, and confirm both CI jobs green on GitHub.
+
+Blocked By:
+- Owner go-ahead to commit and push.
+
+Exact Next Action:
+- Commit T-100 on `feature/t-100-tooling-ci`, push, open PR, check the CI run.
+
+Production Readiness:
+- NOT READY
+
+---
+
 # Session Continuation Rules
 
 ## 1. Never Assume Previous Work Was Completed

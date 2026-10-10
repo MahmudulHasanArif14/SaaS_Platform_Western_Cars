@@ -24,8 +24,9 @@ See `docs/ai/CURRENT_TASK.md`. Work on that task only. Do not start the next one
 - Migrations: `supabase/migrations/*` — every schema change is a migration
 - Tests: `tests/{unit,integration,security,rls,e2e}`
 
-## Commands (replace with real scripts after Day 0)
-`<pm> run lint` · `<pm> run typecheck` · `<pm> test` · `<pm> run test:e2e` · `<pm> run build`
+## Commands (npm)
+`npm run lint` · `npm run typecheck` · `npm test` · `npm run test:e2e` · `npm run build`
+`npm run format` · `npm run format:check` · `npm audit --omit=dev --audit-level=high`
 `supabase db reset` · `supabase migration new <name>` · `supabase test db`
 
 ## Hard rules

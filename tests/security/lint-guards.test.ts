@@ -1,0 +1,51 @@
+import { ESLint } from "eslint";
+import { beforeAll, describe, expect, it } from "vitest";
+
+// Proves the ESLint guards for TR-001 and SEC-A03 are active, so a config
+// change that silently drops them fails the test run.
+describe("lint guards", () => {
+  let eslint: ESLint;
+
+  beforeAll(() => {
+    eslint = new ESLint();
+  });
+
+  async function ruleIds(code: string, filePath: string) {
+    const [result] = await eslint.lintText(code, { filePath });
+    return (result?.messages ?? []).map((message) => message.ruleId);
+  }
+
+  it.each([
+    ["@/lib/supabase/admin"],
+    ["stripe"],
+    ["@/modules/integrations/providers/stripe/client"],
+    ["@supabase/supabase-js"],
+  ])("blocks importing %s from UI code", async (specifier) => {
+    const code = `import x from "${specifier}";\nexport const y = x;\n`;
+
+    expect(await ruleIds(code, "src/app/example/page.tsx")).toContain(
+      "no-restricted-imports",
+    );
+    expect(await ruleIds(code, "src/components/example.tsx")).toContain(
+      "no-restricted-imports",
+    );
+  });
+
+  it("allows the same imports in server-side module code", async () => {
+    const code =
+      'import Stripe from "stripe";\nimport { admin } from "@/lib/supabase/admin";\nexport const s = [Stripe, admin];\n';
+
+    expect(
+      await ruleIds(code, "src/modules/payments/payments.service.ts"),
+    ).not.toContain("no-restricted-imports");
+  });
+
+  it("blocks dangerouslySetInnerHTML", async () => {
+    const code =
+      'export default function X() {\n  return <div dangerouslySetInnerHTML={{ __html: "<b>x</b>" }} />;\n}\n';
+
+    expect(await ruleIds(code, "src/components/example.tsx")).toContain(
+      "react/no-danger",
+    );
+  });
+});

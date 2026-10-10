@@ -2,6 +2,13 @@
 
 Status: PROPOSED. Detailed tokens/components belong in `DESIGN_SYSTEM.md`; screens in `SCREEN_INVENTORY.md`.
 
+Day 0 (VERIFIED 2026-10-10) — what the repo has today:
+- Tailwind CSS 4.3.3, configured in CSS (`@import "tailwindcss"` + `@theme inline` in `app/globals.css`); no `tailwind.config.*`.
+- Fonts: Geist + Geist Mono already loaded via `next/font/google` (`app/layout.tsx`) — the "Inter (or Geist)" / "Geist Mono" option in §3 is the one in place. `body` still falls back to `Arial, Helvetica` in `globals.css`.
+- Tokens: only `--background` / `--foreground` (`#ffffff`/`#171717`, dark `#0a0a0a`/`#ededed`). None of the §3 tokens exist.
+- Theming: `prefers-color-scheme` media query only — no light/dark/system switch, no `next-themes`.
+- Not installed: shadcn/ui, Radix, Lucide, TanStack Table. No components, app shell or screens exist; `/` is the starter page.
+
 ## 1. Product feel
 **"Calm control room."** Operators make high-consequence changes (DNS, money, salaries). The UI must feel precise, dense-but-readable, and trustworthy — closer to Linear/Vercel/Stripe Dashboard than to a colourful admin template.
 

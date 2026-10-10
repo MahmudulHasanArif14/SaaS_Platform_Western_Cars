@@ -14,6 +14,18 @@ Definition of Done (every task): lint ✓ typecheck ✓ relevant tests ✓ build
 | T-001 | Write ADR-001…008 (TRD §16) | ADRs merged |
 | T-002 | Answer PRD open decisions D1–D3 with owner | Decisions recorded |
 
+Phase 0 status (2026-10-10): T-000 DONE (evidence: `docs/ai/WORKSPACE_STATE.md`) · T-001 stubs only, all
+`Decision: PENDING`, uncommitted · T-002 PARTIAL (D1 answered: SaaS, multi-tenant foundation — PRD §10; D2–D3 open, needed by R1/R2).
+
+Day 0 findings that shape Phase 1 (verified — see `WORKSPACE_STATE.md`):
+- Package manager is **npm**; scripts are `dev/build/start/lint` only. T-100 must add `typecheck`, `test`, `test:e2e`.
+- TypeScript `strict` and ESLint (flat config, `eslint-config-next`) already exist and pass; T-100 extends them.
+- No `src/`: code is in root `app/` with `@/*` → `./*`. T-100 decides/moves to `src/` (ADR-001) before modules are added.
+- `npm audit` reports 5 high in the lint toolchain (ISSUE-002); T-100's audit gate needs a decision on it.
+- `.gitignore` has `.env*` without `!.env.example` (ISSUE-003); fix in T-101.
+- Supabase CLI not installed and no `supabase/` dir; prerequisite for T-104/T-105.
+- Next.js 16.4.0: read `node_modules/next/dist/docs/` before T-103/T-104 (per `AGENTS.md`).
+
 ## Phase 1 — Foundation (R0) ~ Days 1–3
 | ID | Task | Satisfies | Done when |
 |---|---|---|---|
