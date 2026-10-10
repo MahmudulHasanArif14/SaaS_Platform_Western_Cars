@@ -1,79 +1,35 @@
 # CURRENT TASK
 
-## Stage
+## Previous Task
 
-DAY 0 — Architecture and Repository Discovery
+DAY 0 — Architecture and Repository Discovery — **COMPLETED 2026-10-10** (documentation; see SESSION_LOG SESSION-001).
 
-## Status
+Acceptance criteria:
+- Repository understood — done (docs only, no code)
+- Existing functionality documented — PROJECT_CONTEXT.md
+- Architecture documented — ARCHITECTURE.md
+- Security boundaries — SECURITY_BASELINE.md, THREAT_MODEL.md (pre-existing), ARCHITECTURE.md §3–§5
+- Database domains — DATA_MODEL.md (pre-existing)
+- Development phases — ROADMAP.md §0
+- External dependencies — COST_MATRIX.md, MASTER_SPEC A12/A18
+- Check results — N/A recorded (no project to run)
 
-IN_PROGRESS
+## Next Recommended Task (NOT AUTHORIZED — requires explicit instruction)
 
-## Objective
+### DAY 1 — Foundation, UI shell, theme system, authentication
 
-Understand the existing repository and prepare the production architecture before implementing business features.
+Scope:
+1. Read current official docs: Next.js (App Router), Supabase SSR/Auth/MFA, shadcn/ui, Tailwind. Record versions.
+2. Scaffold Next.js + TypeScript (strict) + pnpm; ESLint; Vitest; Playwright config.
+3. Tailwind + shadcn/ui + semantic design tokens; dark/light/system theme with persistence.
+4. App shell: sidebar (permission-aware, only implemented modules), topbar, theme toggle, toasts, skeleton/empty/error states.
+5. `lib/env/server.ts` + `client.ts` (Zod), `.env.example`.
+6. Supabase SSR clients (server/browser), middleware session refresh, sign-in/up, email verification, reset, sign-out, protected routes.
+7. Supabase CLI local stack + first migration only if needed for `profiles`.
+8. CI: lint, typecheck, unit, build.
 
-## Required Work
+Out of scope: orgs/RBAC (Day 2), RLS hardening (Day 3), any business module.
 
-1. Inspect the existing repository.
-2. Inspect package/dependency versions.
-3. Inspect current Next.js architecture.
-4. Inspect Supabase configuration.
-5. Inspect current authentication.
-6. Inspect database migrations.
-7. Inspect existing API/server actions.
-8. Inspect existing tests.
-9. Inspect deployment configuration.
-10. Run existing checks.
-11. Create project AI documentation.
-12. Create security threat model.
-13. Create database domain model.
-14. Create implementation roadmap.
-15. Identify required external services/accounts.
+Needs from owner: a Supabase project for STAGING (or approval to work against local stack only).
 
-## Do NOT Implement Yet
-
-Do not implement:
-
-- Domain CRUD
-- DNS
-- Hosting
-- Payments
-- Stripe
-- Dojo
-- CRM
-- Staff chat
-- WebRTC
-- HR
-- Salary
-
-Those come after the architecture foundation.
-
-## Required Output
-
-Create/update:
-
-```text
-docs/ai/PROJECT_CONTEXT.md
-docs/ai/ARCHITECTURE.md
-docs/ai/DATA_MODEL.md
-docs/ai/THREAT_MODEL.md
-docs/ai/SECURITY_BASELINE.md
-docs/ai/ROADMAP.md
-docs/ai/ENVIRONMENT_MATRIX.md
-docs/ai/INTEGRATION_STATUS.md
-docs/ai/COST_MATRIX.md
-docs/ai/PRODUCTION_READINESS.md
-```
-
-## Acceptance Criteria
-
-- Repository understood
-- Existing functionality documented
-- Architecture documented
-- Security boundaries documented
-- Database domains documented
-- Development phases documented
-- External dependencies documented
-- Existing lint/typecheck/test/build results recorded
-
-Do not proceed to feature implementation until this task is complete.
+Acceptance: app runs locally; auth flows work against local Supabase; both themes pass contrast check; lint/typecheck/test/build pass in CI.

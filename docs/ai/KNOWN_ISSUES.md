@@ -79,13 +79,34 @@ None
 ## MEDIUM
 
 ```text id="4kq9dc"
-None
+DOC-002  Feature status model differs between CLAUDE.md and MASTER_SPEC Part B §188  (OPEN)
 ```
 
 ## LOW
 
 ```text id="m7t3za"
-None
+DOC-001  ROADMAP phase numbering contradicted build order  (RESOLVED 2026-10-10, ADR-003)
+DOC-003  WORKSPACE_STATE recorded placeholder commit "abc1234"  (RESOLVED 2026-10-10)
+```
+
+## Documentation issues
+
+### DOC-002
+
+```text
+Title: Two different feature status models
+Status: OPEN
+Severity: MEDIUM
+Area: Documentation / process
+First detected: 2026-10-10
+Description: CLAUDE.md lists NOT_STARTED, DESIGNED, IMPLEMENTED, UNIT_TESTED,
+INTEGRATION_TESTED, E2E_TESTED, CONNECTED, PRODUCTION_VERIFIED, BLOCKED, DEGRADED,
+UNSUPPORTED. MASTER_SPEC Part B §188 lists NOT_STARTED, IN_PROGRESS, IMPLEMENTED,
+TESTED, CONNECTED, PRODUCTION_READY, BLOCKED, DEGRADED, UNSUPPORTED.
+Impact: Inconsistent status reporting across docs.
+Proposed fix: Adopt the CLAUDE.md list (more granular) plus IN_PROGRESS; record as ADR.
+Requires: Owner approval (not chosen silently per CLAUDE.md conflict rule).
+Production impact: NOT BLOCKING
 ```
 
 ---
@@ -1043,7 +1064,7 @@ None
 ## Open Medium
 
 ```text id="3j9p6c"
-None
+DOC-002
 ```
 
 ## Open Low
@@ -1067,5 +1088,5 @@ None
 ## Last Updated
 
 ```text
-YYYY-MM-DD
+2026-10-10
 ```

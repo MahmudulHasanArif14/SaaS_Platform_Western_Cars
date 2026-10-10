@@ -1,3 +1,426 @@
+# MASTER SPECIFICATION
+
+Multi-Tenant Company Operations & Infrastructure Management Platform
+(with a later, separate customer-facing AI Website Builder & Hosting product)
+
+| Field | Value |
+| --- | --- |
+| Document version | 2.0 |
+| Last updated | 2026-10-10 |
+| Repository state at update | Documentation only. No application code, migrations, or tests exist (verified 2026-10-10, commit `3b7f3c9`). |
+| Structure | **Part A** — product specification (this part, new in v2.0). **Part B** — detailed implementation requirements (the v1 master prompt, preserved verbatim). |
+| Precedence | Part A defines *what* and *why*. Part B defines *how* and remains authoritative for engineering rules. Where Part A adds a requirement absent from Part B, the requirement is marked **NEW**. Where they appear to conflict, do not silently choose: record it in `KNOWN_ISSUES.md` and resolve via `DECISIONS.md`. |
+
+---
+
+## A0. How to read this document
+
+### A0.1 Requirement status markers
+
+Every requirement group in Part A carries one marker. These describe **evidence about the requirement in this repository**, not intent.
+
+| Marker | Meaning |
+| --- | --- |
+| `PROPOSED` | Specified; no implementation exists. |
+| `PARTIAL` | Some implementation exists; acceptance criteria not all met. |
+| `NOT_VERIFIED` | Implementation exists but has not been verified against acceptance criteria. |
+| `EXISTING_VERIFIED` | Implemented and verified with recorded evidence (tests, checks, `PRODUCTION_READINESS.md`). |
+
+As of 2026-10-10 **every requirement in this document is `PROPOSED`**. Nothing may be upgraded without evidence recorded in `SESSION_LOG.md` and `PRODUCTION_READINESS.md`.
+
+Implementation progress (NOT_STARTED → … → PRODUCTION_VERIFIED) is tracked separately using the feature status model in `CLAUDE.md` (see `KNOWN_ISSUES.md` DOC-002 for the open reconciliation with Part B §188).
+
+### A0.2 Related documents
+
+| Topic | Document |
+| --- | --- |
+| How Claude works in this repo | [`CLAUDE.md`](../../CLAUDE.md) |
+| Project summary / current stage | [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) |
+| Technical architecture | [`ARCHITECTURE.md`](ARCHITECTURE.md) |
+| Data model | [`DATA_MODEL.md`](DATA_MODEL.md) |
+| Security requirements | [`SECURITY_BASELINE.md`](SECURITY_BASELINE.md) |
+| Threats and mitigations | [`THREAT_MODEL.md`](THREAT_MODEL.md) |
+| Delivery order | [`ROADMAP.md`](ROADMAP.md) |
+| Current authorized task | [`CURRENT_TASK.md`](CURRENT_TASK.md) |
+| Provider state | [`INTEGRATION_STATUS.md`](INTEGRATION_STATUS.md) |
+| Environments | [`ENVIRONMENT_MATRIX.md`](ENVIRONMENT_MATRIX.md) |
+| External costs | [`COST_MATRIX.md`](COST_MATRIX.md) |
+| Release gates | [`PRODUCTION_READINESS.md`](PRODUCTION_READINESS.md) |
+| Decisions | [`DECISIONS.md`](DECISIONS.md) |
+| Problems / blockers | [`KNOWN_ISSUES.md`](KNOWN_ISSUES.md) |
+| Design system / UI | Part B §1B, §95–§98 (a standalone design document does not yet exist) |
+
+---
+
+## A1. Product vision, goals, non-goals, success criteria — `PROPOSED`
+
+### A1.1 Vision
+
+One secure internal platform where a small-to-medium digital services company runs its whole operation: the infrastructure it manages for clients (domains, DNS, hosting, websites, deployments, SSL), the money it collects (payment requests via Stripe and Dojo), the work its staff do (tasks, projects, support), how staff communicate (chat, calls), and the operational records it keeps about staff (HR, salary records, expenses, leave) — with every sensitive action authorized, audited, and recoverable.
+
+A later, **separate** product (A17) lets external customers generate, publish, and host their own websites. It reuses the platform's foundations but is not part of the internal platform's release gates.
+
+### A1.2 Goals
+
+1. Management can understand the state of the company from one dashboard, using only real data.
+2. Infrastructure changes (DNS, nameservers, deployments) are safe: previewed, permission-checked, step-up-protected where risky, audited, and reversible where the provider allows.
+3. Payments are collected through hosted provider flows; the platform never handles raw card data.
+4. Staff see exactly the data their role and assignments permit; salary data is visible only to explicitly authorized users.
+5. Tenant isolation is enforced in the database (RLS), not only in the UI.
+6. Non-technical staff can use the product without training on infrastructure internals.
+
+### A1.3 Non-goals (current scope)
+
+- Statutory payroll, tax, pension, VAT, or employment-law calculations (Part B §173C). Salary features are operational records only.
+- Acting as a domain registrar, card processor, or certificate authority. The platform orchestrates external providers.
+- Storing card numbers or bank credentials.
+- A general-purpose video-conferencing product (Part B §173D: V1 is 1-to-1 calls).
+- Microservices (Part B §3).
+- Accounting/general-ledger functionality.
+- The AI Website Builder before its gate (A17.1).
+
+### A1.4 Success criteria
+
+| ID | Criterion | Measured by |
+| --- | --- | --- |
+| SC-1 | Zero cross-tenant reads/writes in automated RLS and API tests | RLS test suite (Part B §117) |
+| SC-2 | Every high-risk action (Part B §173B) enforced server-side and audited | Security tests (Part B §119) |
+| SC-3 | Infrastructure MVP used for real domain/DNS/hosting records of the company | Production readiness review |
+| SC-4 | Payment status in the platform matches provider status after reconciliation | Reconciliation job results (Part B §71) |
+| SC-5 | No secret appears in a browser response, log line, or error message | Security tests + log review |
+| SC-6 | WCAG 2.1 AA on core workflows, both themes | Accessibility audit (Part B §95) |
+| SC-7 | Backup restore exercised successfully before production release | DR drill record (Part B §113–114) |
+
+Numeric performance budgets are **not yet defined** (open decision OD-6).
+
+---
+
+## A2. User types — `PROPOSED`
+
+Roles are permission bundles, not the security boundary (Part B §17–19). Authorization is permission-based and scoped by organization, assignment, and ownership.
+
+| User type | Default role(s) | Typical scope | Must never |
+| --- | --- | --- | --- |
+| Platform owner | `SUPER_ADMIN` (see OD-1) | Operates the deployment; manages organizations; break-glass support | Bypass RLS through normal app paths; read salary or secrets without the same permission + step-up + audit as anyone else |
+| Organization administrator | `ADMIN` | Full control of one organization: members, roles, settings, integrations | Act outside their organization |
+| Manager | `MANAGER` | Team work, assignments, approvals, workload reports | See salary data unless granted `salary.view` |
+| Employee | `DEVELOPER`, `SEO_MARKETING`, `VIEWER`, or custom | Assigned tasks, projects, websites, chat | See other staff's private HR data |
+| Finance operator | `FINANCE` | Payment requests, invoices, refunds (with approval), reconciliation, salary records if granted | Change payment provider config without step-up |
+| Infrastructure operator | `DEVELOPER` + infra permissions, or custom role (see OD-2) | Domains, DNS, hosting, websites, deployments | Change nameservers / deploy to production without step-up and configured approval |
+| Support agent | `SUPPORT` | Tickets, customer replies, internal notes, support-linked payment requests | See internal notes of tickets outside their access scope; see salary |
+| HR (Part B §17) | `HR` | Employment records, leave, expenses | See salary unless granted |
+| External customer | `CUSTOMER` | Own organization's customer-portal data: their tickets, invoices, payment requests, websites | See internal notes, staff conversations, other customers, other organizations |
+
+Custom roles are supported (Part B §18). Separation of duties applies (Part B §139): a requester cannot approve their own sensitive request when the rule requires a second person.
+
+---
+
+## A3. Organizations, tenant isolation, roles, permissions — `PROPOSED`
+
+**Requirements**
+
+- All business data belongs to an `organization`; every applicable table has `organization_id` (Part B §16).
+- `organization_id` is derived server-side from authenticated membership, never trusted from input.
+- RLS enabled on every tenant/sensitive table; no `USING (true)` on protected data (Part B §20).
+- Highly sensitive data lives in a non-exposed `private` schema accessed only through server-side code (Part B §21).
+- Permission keys per Part B §18; centralized checks `requireAuth`, `requireOrganizationMembership`, `requirePermission`, `requireStepUpAuth`, `canAccess*` (Part B §19).
+- MFA available; step-up enforced on the backend for high-risk actions (Part B §15, §173B).
+- Custom roles; role/permission changes require step-up and are audited.
+- Users may belong to several organizations; active organization is explicit in the session context.
+
+**Acceptance criteria**
+
+- A user of org A cannot read, list, update, or infer existence of org B records via UI, server actions, route handlers, Realtime, Storage, or direct PostgREST calls with a tampered ID.
+- Removing a permission takes effect on the next request (no stale client-side authority).
+- Role changes produce an audit event with actor, target, before/after.
+
+**Error conditions**: missing membership → 404-equivalent (no existence leak); missing permission → 403 with safe message; step-up required → explicit step-up challenge, operation not executed.
+
+Links: Part B §16–§24, `SECURITY_BASELINE.md`, `THREAT_MODEL.md` §7–§9, `DATA_MODEL.md` §3–§7.
+
+---
+
+## A4. CRM: customers, contacts, documents, notes, activity — `PROPOSED`
+
+- Client (customer company) records: company, contacts, email, phone, address, status, notes, linked websites/domains/hosting, payment history, tickets (Part B §38).
+- Client contacts; a contact may be invited as a `CUSTOMER` portal user.
+- Notes: internal (staff-only) vs customer-visible must be distinct fields/tables, never a flag the UI alone respects.
+- Documents attached to clients: private Storage buckets, signed URLs, content-type and size validation, malware scanning strategy decided before release (Part B §59, §103; OD-7).
+- Activity history / customer timeline (Part B §122) assembled from audit and activity events.
+- Soft delete with retention (Part B §133); customer offboarding (Part B §136).
+
+**Acceptance**: staff without `clients.view` cannot list clients; customer users see only their own client record's customer-visible data; deleting a client with active domains/payments is blocked or requires explicit confirmation.
+
+---
+
+## A5. Employee directory, teams, reporting, assignments, offboarding — `PROPOSED`
+
+- Staff directory (Part B §33): name, email, role, status, last login, assignments, security status.
+- **NEW** Teams/departments with members and a team lead (see `DATA_MODEL.md` §8).
+- **NEW** Reporting relationships: each member may have a `reports_to` member in the same organization; no cycles (DB constraint or trigger). Used for manager scoping and approval routing — not for salary visibility, which requires explicit permission.
+- Assignments: staff ↔ clients, websites, projects, tickets (Part B §155).
+- Invite → activate → deactivate lifecycle; invitations idempotent and expiring.
+- Offboarding (Part B §33, §135): disable account, revoke sessions, reassign tasks/ownership, flag shared credentials for rotation, preserve audit history. Deactivation never deletes historical activity.
+
+**Acceptance**: offboarding a user leaves no open task, ticket, or ownership assigned to them without an explicit reassignment decision; their sessions are invalid on next request.
+
+---
+
+## A6. Tasks and projects — `PROPOSED`
+
+- Tasks per Part B §34: title, description, client, website, project, assignee, reviewer, priority, status, progress, due date, estimates, actual hours.
+- Comments, progress reports (Part B §35), attachments, checklists, dependencies (no cycles), watchers, mentions, reopen.
+- Projects with statuses Planning / Active / On Hold / Completed / Archived (Part B §36).
+- Approvals via the reusable approval engine (A6.1).
+- **NEW** Recurring tasks: a recurrence rule (RFC 5545 RRULE subset: daily/weekly/monthly) on a task template; instances generated by a durable scheduled job, idempotent per (template, occurrence date); editing a template affects future instances only.
+- Notifications on assignment, mention, due-soon, overdue, status change (A15).
+- Task dashboards never expose salary data (Part B §35).
+
+### A6.1 Approvals
+
+Request / approve / reject / request changes / cancel / expire; 1- or 2-approver rules; configurable per action type; self-approval blocked where separation of duties applies (Part B §37, §139).
+
+**Acceptance**: a dependent task cannot be completed while a blocking dependency is open (or override is audited); recurrence job run twice produces no duplicate instance.
+
+---
+
+## A7. Internal communication — `PROPOSED` (Team Operations MVP)
+
+- Channels (public/private), direct messages, threads optional (OD-8) (Part B §43).
+- Attachments in private Storage, scanned/validated (Part B §128).
+- Mentions with notifications; read receipts via per-member read state (`chat_read_states`).
+- Presence and typing via Supabase Realtime with authorized channels (Part B §46, §74).
+- Calls: V1 = 1-to-1 audio/video, mute, camera toggle, screen share, call history, TURN support (Part B §47–§50, §173D). Group calls require an SFU provider (OD-9) and are out of V1.
+- Message edit/delete policy and retention: OD-10.
+
+**Acceptance**: a non-member cannot subscribe to a private channel's Realtime topic or read its messages via API; calls fall back to TURN on restrictive networks (tested from an independent network).
+
+---
+
+## A8. Customer support and customer portal — `PROPOSED`
+
+- Tickets with status history, priority, assignment, SLA policies, canned replies, attachments (Part B §40–§42).
+- Internal notes strictly separated from customer-visible replies.
+- **Escalation**: by SLA breach (time-based job) and manually (to manager or tier); escalation recorded in status history and notifies the new owner.
+- Customer replies by portal; email inbound is OD-11.
+- Ticket ↔ task link, ticket ↔ incident link (Part B §42, §159).
+- Support-linked payment requests (Part B §69).
+- Customer portal (Part B §39, §129, §153): own tickets, invoices, payment requests, websites/domains overview, profile. Customer users are a distinct principal type with their own RLS predicates.
+
+**Acceptance**: a customer user calling the ticket API with another ticket's ID receives not-found; internal notes are absent from every customer-facing response payload (verified by test, not by UI inspection).
+
+---
+
+## A9. Salary and payroll-record tracking — `PROPOSED` (restricted)
+
+Operational records only (Part B §52–§54, §173C). No tax/statutory calculations, no payroll-provider integration, no bank transfers, unless separately specified and approved.
+
+- Employment records, salary history (amount, currency, effective dates).
+- Payroll periods; payroll entries per member per period; states `draft → approved → paid` (and `cancelled`); `paid` records the date, method label, and reference entered by an authorized user — the platform does not move money.
+- Approvals for salary adjustments and marking paid where configured.
+- Access: `salary.view`, `salary.manage`, `salary.mark_paid` only; step-up for modify; every read of salary detail is audited.
+- Money as integer minor units + ISO 4217 currency (Part B §91, §132).
+
+**Acceptance**: users without `salary.view` receive no salary fields in any response (including aggregates, search, exports, reports); marking paid twice is idempotent.
+
+---
+
+## A10. Payments — `PROPOSED` (Business Operations MVP)
+
+- Generic payment abstraction (`PaymentProvider` adapter) with Stripe and Dojo implementations (Part B §30, §64–§68).
+- Payment requests / payment links / invoices created internally; customers pay on provider-hosted pages. No card data touches the platform.
+- Provider is chosen explicitly per request; never silently switched (Part B §66).
+- Signed webhooks verified with the provider's mechanism; raw events stored in `private.webhook_events`; processing idempotent by provider event ID (Part B §70, §109–§110).
+- Idempotency keys on creation and refunds (Part B §27).
+- Reconciliation job compares provider state with local state; mismatches become issues, never silent overwrites (Part B §71).
+- Refunds: `payments.refund` + step-up + optional approval (Part B §173B).
+- Full audit history per payment (Part B §124).
+- "Paid" is shown only after a verified provider confirmation — never on link creation (Part B §189).
+
+**Dojo note**: capabilities (payment links, webhooks, refunds via API, sandbox) must be confirmed from current Dojo developer documentation before design is final; anything unsupported is marked `UNSUPPORTED`, not simulated.
+
+---
+
+## A11. Domains, DNS, SSL, hosting, environments, deployments — `PROPOSED` (Infrastructure MVP — first priority)
+
+- Domains (Part B §75): registrar, expiry, auto-renew flag, nameservers, client, status; expiry alerts (Part B §161).
+- DNS (Part B §76–§77): record CRUD with validation per record type, change preview (diff), snapshot before change, rollback from snapshot, verification after change, reconciliation against provider. Nameserver change = step-up + confirmation + optional approval.
+- SSL (Part B §10 schedule, §160): certificate source, issuer, expiry, monitoring.
+- Hosting accounts and providers (Vercel, cPanel, other) via `HostingProvider` adapter.
+- Websites and environments (production/staging/preview) linked to domains, hosting, repository (Part B §78).
+- Deployments (Part B §79–§80): trigger via provider, record logs, post-deploy health check, **rollback** to previous known-good deployment where the provider supports it; production deploys require `websites.deploy` and optional approval.
+- Manual records are allowed when no provider is connected and are labelled as manual; provider-synced data shows last sync time.
+
+**Acceptance**: a DNS change always produces a snapshot first; rollback restores the snapshot's records at the provider and records an audit event; a provider failure mid-change is reported as partial with the exact state (Part B §163).
+
+---
+
+## A12. Integration boundaries — `PROPOSED`
+
+All providers live behind adapters in `lib/providers/*` (Part B §30). Credentials are encrypted at rest, decrypted only server-side (Part B §23). Connection status reflects a real connection test (Part B §31–§32).
+
+| Integration | Purpose | Adapter interface | Status |
+| --- | --- | --- | --- |
+| Supabase | DB, Auth, RLS, Realtime, Storage, queues/cron | (platform) | NOT_CONNECTED |
+| GitHub | Repositories, commits, deploy sources | `RepositoryProvider` | NOT_CONNECTED |
+| Vercel | Hosting, deployments, domains on Vercel | `HostingProvider` | NOT_CONNECTED |
+| Cloudflare | DNS, SSL edge | `DnsProvider` | NOT_CONNECTED |
+| cPanel | Shared hosting, DNS zone on host | `HostingProvider` / `DnsProvider` | NOT_CONNECTED |
+| Registrar(s) | Domain expiry, nameservers | `RegistrarProvider` | NOT_CONNECTED — registrar(s) not yet identified (OD-3) |
+| Stripe | Payments | `PaymentProvider` | NOT_CONNECTED |
+| Dojo | Payments | `PaymentProvider` | NOT_CONNECTED |
+| Email | Transactional email | `EmailProvider` | NOT_CONNECTED — provider not chosen (OD-4) |
+| Monitoring | Uptime/SSL/health | `MonitoringProvider` | NOT_CONNECTED — provider not chosen (OD-5) |
+| TURN | WebRTC relay | config | NOT_CONNECTED |
+
+Authoritative state: `INTEGRATION_STATUS.md`. Before implementing any adapter, the current official documentation must be read and findings recorded there (Part B §173).
+
+---
+
+## A13. Monitoring, alerts, incidents, backup/DR, audit — `PROPOSED`
+
+- Website/SSL/domain health checks via scheduled jobs (Part B §86, §160).
+- Operational alerts → notifications with deduplication.
+- Incidents (Part B §87): severity, timeline, owner, linked websites/tickets, postmortem.
+- Security Center (Part B §88): sessions, MFA coverage, recent high-risk actions, failed logins.
+- Audit logs append-only, tamper-evident where practical, exportable only with permission (Part B §92–§93, §126).
+- Backup and recovery (Part B §113–§114): Supabase backups per plan (PITR availability depends on plan — COST_MATRIX), documented restore procedure, restore drill before production.
+- Structured logs with correlation IDs, no secrets (Part B §100, §158).
+
+---
+
+## A14. Non-functional requirements — `PROPOSED`
+
+| Area | Requirement | Part B |
+| --- | --- | --- |
+| Security | Server-side authorization on every mutation; RLS; secrets server-only; CSRF protections for non-Server-Action endpoints; security headers incl. CSP; rate limiting on auth, webhooks, and sensitive endpoints | §19–§24, §89, §101–§102 |
+| Accessibility | WCAG 2.1 AA, keyboard navigation, focus states, both themes contrast-checked | §95 |
+| Performance | Server Components by default; minimal client JS; paginated tables (keyset for large sets); budgets TBD (OD-6) | §105 |
+| Reliability | Outbox + durable jobs with retry/backoff/dead-letter; idempotency; reconciliation for provider state | §27–§29 |
+| Maintainability | Modular monolith; provider adapters; typed env; Zod validation at boundaries | §2–§3, §13 |
+| Observability | Structured logs, correlation IDs, job run records, provider error records | §100, §158 |
+| Cost control | Every external dependency recorded in `COST_MATRIX.md` with free-tier limits and paid triggers; security and reliability outrank free price | §171, §173A |
+| UI | Polished SaaS UI from day one, dark/light/system themes, semantic tokens, responsive | §1B, §96 |
+
+---
+
+## A15. Notifications — `PROPOSED`
+
+In-app (Realtime) and email; per-user preferences; idempotent delivery keyed by event; no secrets or salary amounts in notification bodies (Part B §73–§74).
+
+---
+
+## A16. Key user journeys, permissions, error conditions, release gates — `PROPOSED`
+
+### A16.1 Journeys (Infrastructure MVP)
+
+| Journey | Actor | Permissions | Key error conditions |
+| --- | --- | --- | --- |
+| Sign in with MFA | Any staff | — | Wrong code; unverified email; locked/rate-limited |
+| Add a domain manually | Infra operator | `domains.create` | Duplicate domain in org; invalid FQDN |
+| Edit DNS record with preview | Infra operator | `domains.manage_dns` | Invalid record value; provider rejects; provider timeout → partial state shown |
+| Roll back DNS to snapshot | Infra operator | `domains.manage_dns` + step-up | Snapshot stale vs provider (reconcile first) |
+| Change nameservers | Infra operator | `domains.manage_dns` + step-up + confirm (+ approval if configured) | Registrar unsupported → `UNSUPPORTED`, manual instructions |
+| Link website ↔ domain ↔ hosting | Infra operator | `websites.update` | Domain in another org (not found) |
+| Trigger production deploy | Developer | `websites.deploy` (+ approval) | Health check fails → mark degraded, offer rollback |
+
+### A16.2 Journeys (Business Operations MVP)
+
+| Journey | Actor | Permissions | Key error conditions |
+| --- | --- | --- | --- |
+| Create payment request from a ticket | Support agent | `payments.create` | Provider not connected; amount/currency invalid; duplicate submit (idempotent) |
+| Customer pays | External customer | (hosted page) | Payment fails/abandoned → stays pending; webhook late → reconciliation |
+| Refund | Finance operator | `payments.refund` + step-up (+ approval) | Partial refund exceeds remaining; provider refuses |
+
+### A16.3 Release gates
+
+| Gate | Must pass before |
+| --- | --- |
+| G0 — Foundation | Any business feature: auth, org membership, RBAC, RLS tests, audit foundation, env validation, CI lint/typecheck/test/build green |
+| G1 — Infrastructure MVP | Internal use for real infra records: A11 acceptance, security tests for DNS/nameserver/deploy paths |
+| G2 — Business Operations MVP | Real payments: webhook signature + replay tests, reconciliation, refunds gated, test-mode end-to-end with each provider |
+| G3 — Company / Team Operations | Customer portal exposure, chat, HR/salary data entry |
+| G4 — Production Platform | Production launch checklist (Part B §143), DR drill, final security audit (Part B §184) |
+| G5 — AI Website Builder start | G4 passed **and** OD-12…OD-15 resolved (A17.1) |
+
+Detailed acceptance criteria: Part B §183; readiness scoring: Part B §182 and `PRODUCTION_READINESS.md`.
+
+---
+
+## A17. Later phase: customer-facing AI Website Builder & Hosting — `PROPOSED` (NEW, gated)
+
+### A17.1 Gate
+
+Work on this product **must not start** until gate G4 has passed for the internal platform and these decisions are recorded in `DECISIONS.md`: AI model provider and pricing (OD-12), hosting/deployment target and per-site cost (OD-13), custom-domain + SSL mechanism and its limits/pricing (OD-14), subscription plans and billing provider (OD-15). Nothing here is assumed free: AI generation, hosting, bandwidth, SSL, custom domains, email, and storage each require verified pricing, commercial-use terms, quotas, and provider capability before design is finalized.
+
+### A17.2 Intended journey
+
+| Step | Description | Key requirements |
+| --- | --- | --- |
+| 1. Registration | Customer signs up | Email verification; bot/abuse protection; separate customer principal from internal staff |
+| 2. Workspace creation | Customer gets a tenant workspace | Same tenant-isolation model (RLS) as A3 |
+| 3. Plan selection | Choose plan | Plans define site count, generation quota, bandwidth, custom domains |
+| 4. Payment verification | Pay via billing provider | Plan activates only on verified webhook; idempotent |
+| 5. AI generation | Generate site from prompt/brief | Quota enforced server-side; prompt/content moderation; generated output stored as versioned, editable content — not executable server code |
+| 6. Editing | Visual/structured editor | Autosave versions; content sanitization (no arbitrary script injection) |
+| 7. Preview | Private preview URL | Not indexed; access-controlled |
+| 8. Publishing | Publish a version | Immutable published version; rollback to previous version |
+| 9. Platform subdomain | `site.<platform-domain>` | Reserved-name list; subdomain takeover prevention |
+| 10. Custom domain verification | Customer connects own domain | Ownership proof (TXT/CNAME) before routing; re-verification on change |
+| 11. SSL | Certificate for custom domain | Automated issuance via chosen provider; expiry monitoring |
+| 12. Deployment monitoring | Health and uptime | Alerts to customer and support |
+| 13. Usage limits | Quotas per plan | Hard limits enforced server-side; usage metering stored |
+| 14. Billing | Subscription lifecycle | Upgrade/downgrade/cancel; dunning; reconciliation |
+| 15. Support | Tickets from builder | Reuses A8 |
+
+### A17.3 Specific risks to design for
+
+Prompt-injection and abusive content generation; phishing/malicious sites hosted on the platform domain (abuse reporting and takedown); cost runaway from generation or bandwidth; subdomain/custom-domain takeover; isolation between customer sites.
+
+---
+
+## A18. Integration assumptions, dependencies, open decisions, out of scope
+
+### A18.1 Assumptions (to verify, not facts)
+
+- Supabase plan supports required features (Auth MFA, Realtime, Storage, queues/cron, backups) at the chosen tier — verify in `COST_MATRIX.md`.
+- Stripe and Dojo merchant accounts exist or will be created by the business owner; sandbox access is available for development.
+- Company domains are held at registrar(s) with API access, or will be managed manually.
+- Hosting is a mix of Vercel and cPanel hosts.
+
+### A18.2 External accounts required for production (Part B §172)
+
+GitHub, Supabase (separate staging and production projects recommended), Vercel (or chosen host), Cloudflare (if used for DNS), domain registrar(s), Stripe merchant account, Dojo merchant account, email provider, TURN provider/server, monitoring provider.
+
+### A18.3 Open business/technical decisions
+
+| ID | Decision | Owner | Blocks |
+| --- | --- | --- | --- |
+| OD-1 | Is the platform owner a cross-tenant operator, or only `SUPER_ADMIN` within each organization? Break-glass procedure? | Business owner | Day 2 RBAC |
+| OD-2 | Add a built-in `INFRA_OPERATOR` role or rely on custom roles? | Business owner | Day 2 RBAC |
+| OD-3 | Which registrar(s) hold company domains; do they offer APIs? | Business owner | Day 5 / Day 28 |
+| OD-4 | Transactional email provider | Business owner | Invitations, notifications |
+| OD-5 | Monitoring provider (or self-implemented checks only) | Business owner | Day 29 |
+| OD-6 | Performance budgets (page load, API latency) | Engineering + owner | Release gate G4 |
+| OD-7 | File malware-scanning approach | Engineering | Attachments/documents |
+| OD-8 | Chat threads in V1? | Business owner | Day 23 |
+| OD-9 | SFU provider for future group calls | Business owner | Post-V1 |
+| OD-10 | Message/ticket/audit retention periods (and any legal retention obligations) | Business owner (+ legal) | Retention jobs |
+| OD-11 | Inbound email-to-ticket in V1? | Business owner | Day 20 |
+| OD-12…15 | AI provider, builder hosting target, custom-domain/SSL mechanism, builder billing plans | Business owner | A17 |
+| OD-16 | Default currency and supported currencies | Business owner | Day 11 |
+| OD-17 | Operating jurisdiction(s) — affects data protection obligations (e.g. UK GDPR) and Dojo availability | Business owner | Privacy (Part B §94), payments |
+
+### A18.4 Out of scope (until separately specified)
+
+Statutory payroll/tax; accounting ledger; card storage; registrar reselling; native mobile apps; group video calls in V1; public API for third parties; AI features inside the internal platform; the AI Website Builder before G5.
+
+---
+
+# PART B — DETAILED IMPLEMENTATION REQUIREMENTS (v1, preserved verbatim)
+
+The content below is the original master implementation prompt. It remains authoritative for engineering rules. All of its requirements carry status `PROPOSED` unless Part A or `PRODUCTION_READINESS.md` records otherwise.
+
 
 # MASTER IMPLEMENTATION PROMPT
 

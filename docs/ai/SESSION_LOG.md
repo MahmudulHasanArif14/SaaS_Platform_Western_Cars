@@ -193,6 +193,31 @@ NOT_CONNECTED
 
 ---
 
+## SESSION-001
+
+Date: 2026-10-10
+Environment: Claude (cloud workspace)
+Branch: docs/day-0-master-spec (from main @ 3b7f3c9)
+Task: DAY 0 — Repository discovery, MASTER_SPEC v2, architecture docs
+
+Completed:
+- Repository audit: documentation only; no code, package.json, migrations, tests, CI, or deploy config.
+- MASTER_SPEC v2.0: Part A product spec (A0–A18 incl. AI Website Builder later phase, release gates G0–G5, open decisions OD-1–OD-17); Part B = v1 prompt preserved verbatim.
+- Wrote PROJECT_CONTEXT.md, ARCHITECTURE.md (were empty), COST_MATRIX.md (new, all pricing unverified), expanded ENVIRONMENT_MATRIX.md.
+- ROADMAP §0 authoritative execution order (ADR-003); §49 position updated.
+- DECISIONS ADR-001..003; KNOWN_ISSUES DOC-001..003.
+- Fixed WORKSPACE_STATE placeholder commit.
+
+Files changed: docs/ai/{MASTER_SPEC,PROJECT_CONTEXT,ARCHITECTURE,COST_MATRIX,ENVIRONMENT_MATRIX,ROADMAP,DECISIONS,KNOWN_ISSUES,CURRENT_TASK,WORKSPACE_STATE,SESSION_LOG}.md
+Database changes: None
+Tests: lint/typecheck/test/build N/A (no project). Markdown link targets checked.
+Security: Documentation only; no secrets added.
+Known blockers: Open decisions OD-1..OD-17 (owner); DOC-002.
+Next: DAY 1 — Foundation / UI shell / theme / auth (requires authorization).
+Production readiness: NOT READY
+
+---
+
 # Session Continuation Rules
 
 ## 1. Never Assume Previous Work Was Completed

@@ -21,6 +21,33 @@ It does NOT replace:
 
 ---
 
+# 0. Execution Order (authoritative)
+
+The phase numbering below (Phases 0–38) is a catalogue, **not** the build order. Phases 4–6 (Staff, CRM, Tasks) are numbered before Domain/DNS, but MASTER_SPEC Part B §1A/§8 and `CLAUDE.md` require infrastructure first. Build in this order (see DECISIONS ADR-003):
+
+```text
+Day 0      Discovery / architecture / project memory          (Phase 0)
+Day 1-3    Foundation, UI shell, auth, orgs, RBAC, RLS, audit  (Phases 1-3)
+Day 4-5    Domains                                             (Phase 7)
+Day 6-7    DNS + safety/snapshots                              (Phase 8)
+Day 8-10   Hosting, websites/environments, SSL/health, deploy metadata (Phases 9-10)
+Day 11-16  Payments: generic -> requests/invoices -> Stripe -> Dojo -> unified (Phases 15-19)
+Day 17     Clients / CRM                                       (Phase 5)
+Day 18-19  Projects / tasks / reporting / approvals            (Phase 6)
+Day 20-21  Support, customer portal                            (Phases 20-21)
+Day 22     Staff management                                    (Phase 4)
+Day 23-25  Chat, realtime, WebRTC                              (Phases 22-24)
+Day 26-27  HR, salary                                          (Phase 25)
+Day 28     GitHub/Vercel/Cloudflare/cPanel/registrar           (Phases 11-14)
+Day 29     Monitoring, incidents, reports, hardening           (Phases 26-36 as needed)
+Day 30     E2E, security audit, DR verification, release       (Phases 37-38)
+Later      AI Website Builder (MASTER_SPEC A17) — gated by G5
+```
+
+Cross-cutting phases (26 Notifications, 27 Jobs, 28 Webhooks, 29 Audit) are built incrementally when the first feature needs them, not as standalone phases.
+
+---
+
 # 2. Roadmap Principles
 
 The project must follow these principles:
@@ -1818,16 +1845,14 @@ Do not silently reorder major phases.
 
 ```text
 Current Phase:
-Phase 0 — Project Discovery & Foundation
+Phase 0 / Day 0 — Project Discovery & Foundation (documentation)
 
-Current Milestone:
-Repository and AI workflow initialization
+Status:
+Day 0 documentation complete (2026-10-10); awaiting review
 
-Current Task:
-Inspect repository and establish verified project state
-
-Next Planned Phase:
-Phase 1 — Secure Application Foundation
+Next Planned:
+Day 1 — Foundation, UI shell, theme system, authentication (Phase 1 + auth part of Phase 2)
+Requires explicit authorization.
 ```
 
 The actual current task must always be taken from:
