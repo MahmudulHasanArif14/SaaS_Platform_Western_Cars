@@ -208,7 +208,7 @@ CHANGELOG.md
 Status:
 
 ```text
-NOT_STARTED
+IN_PROGRESS — T-100 (tooling + CI skeleton) implemented and locally verified 2026-10-10; CI not yet run on GitHub. T-101+ NOT_STARTED.
 ```
 
 ## Goals

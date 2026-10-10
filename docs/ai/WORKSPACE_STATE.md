@@ -6,80 +6,78 @@ Verified facts only (tools run on 2026-10-10). Anything not verified is marked `
 
 | Field | Value |
 |---|---|
-| Branch | `chore/agent-skills` (local, not pushed; branched from `main`) |
-| Commit | `9227aab` — `chore(skills): add 5 vercel-labs agent skills` (parent `c7997c8`) |
-| Last verified commit | `c7997c8` + uncommitted changes below |
-| Working tree | DIRTY |
+| Branch | `feature/t-100-tooling-ci` (local; not pushed) |
+| Commit | `154af40` — `docs: record Day 0 discovery, ADR stubs and D1 decision` |
+| Remote | `origin` → `github.com/MahmudulHasanArif14/SaaS_Platform_Western_Cars` |
+| Working tree | DIRTY — all of T-100 is uncommitted |
 
-Uncommitted at end of Day 0:
+Uncommitted (T-100):
 
-- Deleted (pre-existing, not by this session): `public/file.svg`, `globe.svg`, `next.svg`, `vercel.svg`, `window.svg`
-- Day 0 docs: `docs/ai/*`, `docs/ai/decisions/ADR-001..008`, planning docs under `docs/`
-- (Agent skills: 5 committed in `9227aab`; the other 4 were removed)
-- `graphify-out/cache/last_query_stamp` (tool side effect)
+- Modified: `.gitignore`, `eslint.config.mjs`, `next.config.ts`, `package.json`, `package-lock.json`, `tsconfig.json`, `CLAUDE.md`
+- Renamed (staged): `app/{favicon.ico,globals.css,layout.tsx,page.tsx}` → `src/app/`
+- New: `.github/workflows/ci.yml`, `.github/dependabot.yml`, `.nvmrc`, `.prettierrc.json`, `.prettierignore`,
+  `playwright.config.ts`, `vitest.config.mts`, `tests/e2e/smoke.spec.ts`, `tests/security/lint-guards.test.ts`
+- Docs: `docs/ai/{CURRENT_TASK,WORKSPACE_STATE,SESSION_LOG,ROADMAP,KNOWN_ISSUES,DECISIONS,PRODUCTION_READINESS}.md`,
+  `docs/ai/decisions/ADR-001-modular-monolith.md`, `docs/security/SECURITY_CHECKLIST.md`
+- Deleted (pre-existing, not by these sessions): `public/{file,globe,next,vercel,window}.svg`
 
 ## Toolchain
 
 | Item | Value | Evidence |
 |---|---|---|
 | Package manager | npm 10.9.9 | `package-lock.json`; `npm -v` |
-| Node.js | v22.23.3 (not pinned: no `.nvmrc`, no `engines`) | `node -v`; `package.json` |
+| Node.js | v22.23.3; pinned by `.nvmrc` (22) and `engines.node >=22.12.0` | `node -v`; `package.json` |
 | Next.js | 16.4.0, App Router, Turbopack | `package.json`; build output |
 | React / React DOM | 19.3.0 | `package.json` |
-| TypeScript | 5.9.3 installed (`^5`), `strict: true` | `node_modules/typescript`; `tsconfig.json` |
-| Tailwind CSS | 4.3.3 installed (`^4`) via `@tailwindcss/turbopack` loader | `next.config.ts`; `app/globals.css` |
-| ESLint | 9.39.5 installed (`^9`), flat config, `eslint-config-next` 16.4.0 (core-web-vitals + typescript) | `eslint.config.mjs` |
-| Next config flags | `cacheComponents: true`, `partialPrefetching: true` | `next.config.ts` |
-| Path alias | `@/*` → `./*` (repo root, not `src/`) | `tsconfig.json` |
-| Supabase CLI | NOT INSTALLED (`supabase: command not found`) | shell |
+| TypeScript | `^5`, `strict` + `noUncheckedIndexedAccess`, `noImplicitOverride`, `noFallthroughCasesInSwitch` | `tsconfig.json` |
+| Tailwind CSS | `^4` via `@tailwindcss/turbopack` loader | `next.config.ts` |
+| ESLint | `^9` flat config; `eslint-config-next` 16.4.0 + `eslint-config-prettier`; TR-001 and `react/no-danger` rules | `eslint.config.mjs` |
+| Prettier | 3.9.9, default options | `.prettierrc.json` |
+| Vitest | 5.0.3, node environment, `tests/{unit,integration,security}/**/*.test.{ts,tsx}` | `vitest.config.mts` |
+| Playwright | 1.64.0, chromium, runs `npm run build && npm run start` on 127.0.0.1:3000 | `playwright.config.ts` |
+| Next config flags | `cacheComponents: true`, `partialPrefetching: true`, `turbopack.root: __dirname` | `next.config.ts` |
+| Path alias | `@/*` → `./src/*` | `tsconfig.json`, `vitest.config.mts` |
+| Supabase CLI | NOT INSTALLED | shell (Day 0) |
 | Vercel CLI | NOT INSTALLED | session hook |
 
-Not installed (no dependency present): Supabase JS / `@supabase/ssr`, shadcn/ui, Radix, Lucide, `next-themes`,
-Zod, React Hook Form, Stripe SDK, Vitest, Testing Library, Playwright, Prettier, Sentry.
+Not installed: Supabase JS / `@supabase/ssr`, shadcn/ui, Radix, Lucide, `next-themes`, Zod, React Hook Form,
+Stripe SDK, Testing Library, Sentry.
 
 ## Repository contents
 
 | Area | State |
 |---|---|
-| App code | `app/layout.tsx`, `app/page.tsx`, `app/globals.css`, `app/favicon.ico` — unmodified create-next-app starter |
+| App code | `src/app/{layout.tsx,page.tsx,globals.css,favicon.ico}` — unmodified create-next-app starter |
 | Routes | `/` and `/_not-found` only (both static) — from build output |
-| `src/` | DOES NOT EXIST (docs assume `src/app`, `src/modules`, `src/lib`) |
-| Modules / services / authorization / env helpers | NONE |
-| Auth | NONE |
-| Middleware / proxy | NONE (`middleware.ts` / `proxy.ts` absent) |
-| API routes / server actions | NONE |
+| `src/modules`, `src/lib`, `src/components` | DO NOT EXIST yet |
+| Auth / middleware / proxy / API routes / server actions | NONE |
 | `supabase/` (config, migrations, RLS policies, seed) | DOES NOT EXIST |
-| Tests (`tests/`, any `*.test.*`) | NONE |
-| CI (`.github/`) | NONE |
+| Tests | `tests/security/lint-guards.test.ts` (6), `tests/e2e/smoke.spec.ts` (2). No unit, integration or RLS tests |
+| CI | `.github/workflows/ci.yml` (quality + e2e jobs), `.github/dependabot.yml` — never run on GitHub |
 | `vercel.json` / `vercel.ts` | NONE |
 | `.env.example` / `.env*` | NONE present |
-| `.gitignore` | ignores `.env*` with no `!.env.example` exception |
+| `.gitignore` | ignores `.env*` with no `!.env.example` exception (ISSUE-003) |
 | `public/` | empty (5 starter SVGs deleted, uncommitted) |
-| `AGENTS.md` | generated by `next dev`: Next 16 has breaking changes — read `node_modules/next/dist/docs/` before writing code |
-| Agent skills | 13 from `Leonxlnx/taste-skill` + 5 from `vercel-labs/agent-skills` (all committed) in `.claude/skills/` |
-| Other tracked tooling | `graphify-out/` (incl. cache), `.claude/settings*.json`, `prompts/`, root `00_BOOTSTRAP_PROMPT.md` (identical copy of `prompts/00_BOOTSTRAP_PROMPT.md`) |
 
 ## Commands (verified from `package.json`)
 
-`npm run dev` · `npm run build` · `npm run start` · `npm run lint`
+`npm run dev` · `npm run build` · `npm run start` · `npm run lint` · `npm run typecheck` ·
+`npm run format` · `npm run format:check` · `npm test` · `npm run test:watch` · `npm run test:e2e`
 
-No `typecheck`, `test` or `test:e2e` script exists. Typecheck currently = `npx tsc --noEmit`.
-
-## Last verification (2026-10-10, commit `c7997c8` + working tree)
+## Last verification (2026-10-10, commit `154af40` + working tree)
 
 | Check | Command | Result | Notes |
 |---|---|---|---|
-| git status | `git status` | PASS | dirty, see above |
-| branch | `git branch --show-current` | PASS | `main` |
-| log | `git log --oneline -10` | PASS | 5 commits, HEAD `c7997c8` |
-| install | `npm install` | PASS | 364 packages audited; lockfile unchanged; reports 5 high vulnerabilities |
+| format | `npm run format:check` | PASS | |
 | lint | `npm run lint` | PASS | exit 0, no findings |
-| typecheck | `npx tsc --noEmit` | PASS | exit 0; no `typecheck` script |
-| tests | `npm test` | FAIL | `Missing script: "test"` — no test framework installed |
-| build | `npm run build` | PASS | Next 16.4.0 Turbopack; warning: workspace root inferred, stray `C:\Users\mahmu\package-lock.json` ignored |
-| audit | `npm audit` | FAIL | 5 high: `braces` → `micromatch` → `fast-glob` → `@next/eslint-plugin-next` → `eslint-config-next` (dev/lint chain) |
-| supabase | `supabase status` | NOT RUN | no `supabase/` directory; CLI not installed |
-| e2e / RLS / security tests | — | NOT RUN | none exist |
+| typecheck | `npm run typecheck` | PASS | `next typegen && tsc --noEmit` |
+| unit/security | `npm test` | PASS | 1 file, 6 tests |
+| build | `npm run build` | PASS | no warnings; routes `/`, `/_not-found` |
+| e2e | `npm run test:e2e` | PASS | 2 tests, chromium, against production build |
+| audit (prod) | `npm audit --omit=dev --audit-level=high` | PASS | 0 vulnerabilities |
+| audit (full) | `npm audit` | FAIL | 5 high in dev lint chain (ISSUE-002) |
+| CI on GitHub | — | NOT RUN | branch not pushed |
+| supabase / RLS tests | — | NOT RUN | none exist |
 
 ## Environments / deployment / integrations
 
@@ -94,26 +92,24 @@ No `typecheck`, `test` or `test:e2e` script exists. Typecheck currently = `npx t
 
 ## Completed milestones (with evidence)
 
-- T-000 repository inventory + checks — this file.
-- ADR-001..008 stubs created, all `Decision: PENDING` — `docs/ai/decisions/`.
+- T-000 repository inventory + checks (commit `154af40`).
+- ADR-001 ACCEPTED (modular monolith, `src/`); ADR-002..008 `Decision: PENDING`.
 
 ## Current task
 
-DAY 0 discovery — done, see `CURRENT_TASK.md`. Recommended next: T-100 (not started, not authorized).
+T-100 — implemented and locally verified; not COMPLETED until CI is green on GitHub. See `CURRENT_TASK.md`.
 
 ## Blockers
 
-- PRD decision D1 answered (SaaS, multi-tenant foundation); org-creation mode (self-serve vs provisioned) open before T-107.
+- T-100 completion: commit + push need owner go-ahead.
+- Org-creation mode (self-serve vs provisioned) open before T-107.
 - Supabase CLI not installed — required from T-104/T-105.
 
 ## Docs vs. implementation discrepancies
 
-1. Docs (`CLAUDE.md`, TRD §2) place code under `src/`; repo uses root `app/` with `@/*` → `./*`.
-2. `.claude/settings.json` allows `pnpm lint/test/typecheck/build`; the package manager is npm.
-3. `CLAUDE.md` commands still use `<pm>` placeholders; `typecheck`/`test`/`test:e2e` scripts do not exist.
-4. `CURRENT_TASK.md` (Day 0) lists `docs/ai/COST_MATRIX.md` as required output; the file does not exist.
-5. TRD §1 said "ADR-006 decides" the job engine while TRD §16 assigns it to ADR-003 (corrected in TRD §1).
-6. Several `docs/ai/*.md` files end with leftover generation-prompt text (see KNOWN_ISSUES ISSUE-006).
+1. `.claude/settings.json` allows `pnpm lint/test/typecheck/build`; the package manager is npm (ISSUE-004b).
+2. `docs/ai/COST_MATRIX.md` (Day 0 required output) does not exist (ISSUE-006).
+3. Several `docs/ai/*.md` files end with leftover generation-prompt text (ISSUE-006).
 
 ## Last updated
 

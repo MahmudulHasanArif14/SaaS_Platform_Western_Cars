@@ -2,62 +2,64 @@
 
 ## Stage
 
-DAY 0 — Architecture and Repository Discovery (T-000)
+Phase 1 — T-100: Tooling and CI skeleton
 
 ## Status
 
-COMPLETED (discovery scope) — 2026-10-10, with the open items listed below.
+IMPLEMENTED, locally verified — NOT yet COMPLETED (2026-10-10).
 
-No task is currently authorized. The next task below is a recommendation only.
+The acceptance criterion is "CI green on empty app". The workflow has never run on GitHub: the work is
+uncommitted on `feature/t-100-tooling-ci` and has not been pushed. Committing and pushing need owner go-ahead.
 
-## Evidence
+## Scope delivered
 
-| Acceptance criterion | Result | Evidence |
-|---|---|---|
-| Repository understood | MET | `docs/ai/WORKSPACE_STATE.md` |
-| Existing functionality documented | MET | create-next-app starter only; routes `/`, `/_not-found` (WORKSPACE_STATE) |
-| Architecture documented | MET (target design, nothing built) | `docs/ai/ARCHITECTURE.md`, `docs/technical/TRD.md` §1.1 |
-| Security boundaries documented | MET (rules/threats, no controls built) | `SECURITY_BASELINE.md`, `THREAT_MODEL.md`, `docs/security/SECURITY_CHECKLIST.md` (all NOT_STARTED) |
-| Database domains documented | MET (proposal, no migrations) | `DATA_MODEL.md`, `docs/technical/BACKEND_SCHEMA.md` |
-| Development phases documented | MET | `ROADMAP.md`, `docs/plan/IMPLEMENTATION_PLAN.md` |
-| External dependencies documented | MET (none connected) | `INTEGRATION_STATUS.md` |
-| lint/typecheck/test/build results recorded | MET | table below |
+| Item | Evidence |
+|---|---|
+| Strict TS (`noUncheckedIndexedAccess`, `noImplicitOverride`, `noFallthroughCasesInSwitch`) | `tsconfig.json` |
+| `src/` layout, `@/*` → `./src/*` | `src/app/*`, ADR-001 (ACCEPTED) |
+| ESLint `no-restricted-imports` for admin client / provider adapters / provider SDKs in UI code (TR-001) | `eslint.config.mjs` |
+| ESLint `react/no-danger` (no `dangerouslySetInnerHTML`) | `eslint.config.mjs` |
+| Guards proven by tests | `tests/security/lint-guards.test.ts` (6 tests) |
+| Prettier + `eslint-config-prettier` | `.prettierrc.json`, `.prettierignore` |
+| Vitest | `vitest.config.mts`, `npm test` |
+| Playwright (runs against a production build) | `playwright.config.ts`, `tests/e2e/smoke.spec.ts` |
+| GitHub Actions: quality job + E2E job | `.github/workflows/ci.yml` |
+| Audit gate (production deps) + weekly Dependabot (SEC-D05) | `ci.yml`, `.github/dependabot.yml` |
+| Node pinned | `.nvmrc` (22), `engines.node >=22.12.0` |
+| Scripts `typecheck`, `format`, `format:check`, `test`, `test:watch`, `test:e2e` | `package.json`, `CLAUDE.md` |
 
-Checks run on commit `c7997c8` + working tree (npm 10.9.9, Node v22.23.3):
+## Checks run locally (2026-10-10, `154af40` + working tree, Node v22.23.3, npm 10.9.9)
 
 | Check | Result |
 |---|---|
-| `npm install` | PASS (lockfile unchanged) |
+| `npm run format:check` | PASS |
 | `npm run lint` | PASS |
-| `npx tsc --noEmit` | PASS (no `typecheck` script) |
-| `npm test` | FAIL — no `test` script, no test framework |
-| `npm run build` | PASS (Next.js 16.4.0, Turbopack) |
-| `npm audit` | FAIL — 5 high in dev lint chain (ISSUE-002) |
-| `supabase status` | NOT RUN — no `supabase/` directory, CLI not installed |
+| `npm run typecheck` | PASS |
+| `npm test` | PASS — 1 file, 6 tests |
+| `npm run build` | PASS — routes `/`, `/_not-found`; workspace-root warning gone |
+| `npm run test:e2e` | PASS — 2 tests (chromium) |
+| `npm audit --omit=dev --audit-level=high` | PASS — 0 vulnerabilities |
+| `npm audit` (full tree) | FAIL — 5 high, dev lint chain (ISSUE-002, not gated) |
+| GitHub Actions run | NOT RUN — not pushed |
 
-## Open items (not done in Day 0)
+## Remaining to mark COMPLETED
 
-- `docs/ai/COST_MATRIX.md` (listed in the original Day 0 required output) does not exist.
-- ADR-001..008 are stubs with `Decision: PENDING` (`docs/ai/decisions/`).
-- PRD decision D1 ANSWERED 2026-10-10: SaaS with multi-tenancy foundation (recorded in PRD §10, ADR-002 context).
-  Sub-question still open before T-107: self-serve vs operator-provisioned org creation.
-- Agent skills: 5 approved and committed (`9227aab`, branch `chore/agent-skills`); 4 removed.
-- Day 0 docs and ADR stubs are still uncommitted.
-- Issues found: `docs/ai/KNOWN_ISSUES.md` ISSUE-001..006.
+1. Commit the T-100 changes (owner go-ahead).
+2. Push the branch / open a PR and confirm both CI jobs are green.
+3. If CI fails on Linux, fix and re-verify.
+
+## Open items
+
+- `.claude/settings.json` still allowlists `pnpm …` commands; package manager is npm (ISSUE-004b) — left for the owner.
+- Dependabot will open PRs once the branch is merged to `main`.
+- ADR-002..008 still `Decision: PENDING`. `docs/ai/COST_MATRIX.md` still missing (ISSUE-006).
+- Org-creation mode (self-serve vs operator-provisioned) open before T-107.
 
 ## Recommended next task (NOT STARTED — requires explicit instruction)
 
-**T-100** — Strict TS, ESLint rules (`no-restricted-imports` for admin/provider SDKs, no
-`dangerouslySetInnerHTML`), Prettier, Vitest, Playwright, GitHub Actions skeleton.
-Satisfies TR-001, SEC-D05. Done when: CI green on empty app. See `docs/plan/IMPLEMENTATION_PLAN.md` Phase 1.
-
-Inputs T-100 needs (from Day 0):
-
-- Package manager is npm; add `typecheck`, `test`, `test:e2e` scripts and update `CLAUDE.md` commands.
-- Decide `src/` vs root `app/` (ADR-001) before adding structure.
-- Decide how the `npm audit` gate treats ISSUE-002.
-- Read `node_modules/next/dist/docs/` first (Next.js 16.4.0, per `AGENTS.md`).
-- New dev dependencies must be recorded in `docs/ai/DECISIONS.md`.
+**T-101** — `lib/env` server/client Zod validation + `.env.example`. Satisfies TR §14, SEC-C02.
+Done when: build fails on a missing server var in prod mode. Also fixes ISSUE-003 (`!.env.example` in `.gitignore`).
+Adds a runtime dependency (Zod) — record in `DECISIONS.md`.
 
 ## Do NOT implement yet
 

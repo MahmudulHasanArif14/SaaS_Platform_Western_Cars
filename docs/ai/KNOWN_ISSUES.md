@@ -79,30 +79,34 @@ None
 ## MEDIUM
 
 ```text id="4kq9dc"
-ISSUE-002
+ISSUE-002 (MITIGATED)
 ```
 
 ### ISSUE-002 — 5 high-severity advisories in the lint toolchain
 
 ```text
-Status: OPEN
+Status: MITIGATED (not fixed)
 Severity: MEDIUM
 Area: Dependencies (dev only)
 Environment: LOCAL
 First detected: 2026-10-10 (npm audit)
+Last updated: 2026-10-10 (T-100)
 Actual: braces (GHSA-vfj7-8cjw-p6xm, DoS) -> micromatch -> fast-glob -> @next/eslint-plugin-next -> eslint-config-next 16.4.0.
-Impact: Dev/lint dependency chain. Will fail the planned CI gate `npm audit --audit-level=high` (TRD §11, SEC-D05).
-Workaround: None verified. npm's suggested fix (`npm audit fix --force`) downgrades eslint-config-next to
+        `npm audit` (full tree) still reports 5 high.
+Impact: Dev/lint dependency chain; not shipped.
+Workaround: CI gate scoped to production deps: `npm audit --omit=dev --audit-level=high` (0 vulnerabilities,
+            verified 2026-10-10). npm's suggested fix (`npm audit fix --force`) downgrades eslint-config-next to
             14.2.35 — a breaking change; do not apply.
-Proposed fix: Decide in T-100 (wait for upstream fix, npm `overrides`, or scope the audit gate to production deps).
+Proposed fix: Upgrade when upstream ships a fix (weekly Dependabot), then widen the gate to the full tree.
 Related task: T-100
-Related files: package.json, package-lock.json
+Related files: package.json, package-lock.json, .github/workflows/ci.yml
+Related decision: DECISIONS.md "CI audit gate scope"
 ```
 
 ## LOW
 
 ```text id="m7t3za"
-ISSUE-001, ISSUE-003, ISSUE-004, ISSUE-005, ISSUE-006
+ISSUE-001, ISSUE-003, ISSUE-004, ISSUE-006 (ISSUE-005 RESOLVED)
 ```
 
 ### ISSUE-001 — Home page references deleted images
@@ -112,11 +116,11 @@ Status: OPEN
 Severity: LOW
 Area: UI (starter page)
 First detected: 2026-10-10
-Actual: app/page.tsx renders <Image src="/next.svg"> and "/vercel.svg"; both files are deleted in the working
-        tree (uncommitted) and public/ is empty. Build still passes.
+Actual: src/app/page.tsx renders <Image src="/next.svg"> and "/vercel.svg"; both files are deleted in the working
+        tree (uncommitted) and public/ is empty. Build and E2E smoke still pass.
 Impact: Broken images on `/` at runtime (inferred from the files; not observed in a browser this session).
 Proposed fix: Replace the starter page in T-102 (app shell), or restore the files.
-Related files: app/page.tsx, public/
+Related files: src/app/page.tsx, public/
 ```
 
 ### ISSUE-003 — .gitignore would ignore .env.example
@@ -135,28 +139,30 @@ Related files: .gitignore
 ### ISSUE-004 — Docs and tooling config do not match the repo layout / package manager
 
 ```text
-Status: OPEN
+Status: OPEN (partly resolved in T-100)
 Severity: LOW
 Area: Documentation / tooling
 First detected: 2026-10-10
-Actual: (a) CLAUDE.md and TRD §2 assume src/app, src/modules, src/lib; repo has root app/ and `@/*` -> `./*`.
-        (b) .claude/settings.json allowlists `pnpm lint/test/typecheck/build`; package manager is npm.
-        (c) CLAUDE.md commands use `<pm>` placeholders; no typecheck/test/test:e2e scripts exist.
-Proposed fix: Resolve in T-100 (ADR-001 for src/; add scripts; update CLAUDE.md and settings).
+Last updated: 2026-10-10 (T-100)
+Actual: (a) RESOLVED — code moved to src/app, `@/*` -> `./src/*` (ADR-001).
+        (b) OPEN — .claude/settings.json allowlists `pnpm lint/test/typecheck/build`; package manager is npm.
+        (c) RESOLVED — scripts added; CLAUDE.md commands use npm.
+Proposed fix: (b) owner replaces the pnpm entries with the npm equivalents (permission allowlist, not changed by the agent).
 Related files: CLAUDE.md, .claude/settings.json, tsconfig.json, package.json
 ```
 
 ### ISSUE-005 — Turbopack workspace-root warning on build
 
 ```text
-Status: OPEN
+Status: RESOLVED
 Severity: LOW
 Area: Build (local environment)
 First detected: 2026-10-10 (npm run build)
-Actual: Next.js warns that it ignored a package-lock.json in the user home directory because it is outside the
-        Git repository, and suggests setting `turbopack.root`. Build passes.
-Impact: Warning only, specific to this machine.
-Proposed fix: Remove the stray lockfile or set `turbopack.root` in T-100.
+Actual: Next.js warned that it ignored a package-lock.json in the user home directory because it is outside the
+        Git repository, and suggested setting `turbopack.root`.
+Resolution: `turbopack.root: __dirname` set in next.config.ts (T-100).
+Resolved date: 2026-10-10
+Verification: `npm run build` output contains no warning.
 Related files: next.config.ts
 ```
 
@@ -1135,13 +1141,13 @@ None
 ## Open Medium
 
 ```text id="3j9p6c"
-ISSUE-002
+ISSUE-002 (MITIGATED)
 ```
 
 ## Open Low
 
 ```text id="6x2r8d"
-ISSUE-001, ISSUE-003, ISSUE-004, ISSUE-005, ISSUE-006
+ISSUE-001, ISSUE-003, ISSUE-004 (b only), ISSUE-006
 ```
 
 ## Blocked

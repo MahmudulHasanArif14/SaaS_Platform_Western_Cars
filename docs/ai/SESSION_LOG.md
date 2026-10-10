@@ -266,6 +266,79 @@ Notes:
 
 ---
 
+## SESSION-2026-10-10-2
+
+Date: 2026-10-10
+AI/Environment: Claude Code (Windows, local)
+Branch: feature/t-100-tooling-ci
+Commit: 154af40 (all T-100 work uncommitted)
+Task: T-100 — strict TS, ESLint guards, Prettier, Vitest, Playwright, GitHub Actions skeleton
+Objective: Finish and verify the T-100 work already present in the working tree.
+
+Task:
+STATUS: INCOMPLETE
+
+Completed:
+- Verified the existing T-100 working-tree changes (src/ move, strict TS flags, ESLint TR-001 + react/no-danger
+  guards, Prettier, Vitest, Playwright, CI workflow, Node pin, scripts).
+- Added `.github/dependabot.yml` (weekly npm + github-actions, SEC-D05).
+- Confirmed `actions/{checkout,setup-node,upload-artifact}@v7` tags exist.
+- Recorded ADR-001 (ACCEPTED), dev-dependency and audit-gate decisions in DECISIONS.md.
+- Updated CLAUDE.md commands to npm.
+
+Files Created:
+- .github/dependabot.yml (this session); earlier T-100 work: .github/workflows/ci.yml, .nvmrc, .prettierrc.json,
+  .prettierignore, playwright.config.ts, vitest.config.mts, tests/e2e/smoke.spec.ts, tests/security/lint-guards.test.ts
+
+Files Modified:
+- CLAUDE.md, docs/ai/{CURRENT_TASK,WORKSPACE_STATE,SESSION_LOG,ROADMAP,KNOWN_ISSUES,DECISIONS,PRODUCTION_READINESS}.md,
+  docs/ai/decisions/ADR-001-modular-monolith.md, docs/security/SECURITY_CHECKLIST.md
+- Earlier T-100 work: .gitignore, eslint.config.mjs, next.config.ts, package.json, package-lock.json, tsconfig.json;
+  app/* renamed to src/app/*
+
+Database Changes:
+- None
+
+Integration Changes:
+- None
+
+Security Changes:
+- Lint guards for TR-001 (no admin client / provider adapter / provider SDK imports in UI code) and
+  `dangerouslySetInnerHTML`, each proven by a test. CI job has `permissions: contents: read`.
+- No secrets read or written; no `.env*` files exist.
+
+Tests:
+- `npm run format:check` PASS · `npm run lint` PASS · `npm run typecheck` PASS · `npm test` PASS (6 tests)
+- `npm run test:e2e` PASS (2 tests, chromium, production build)
+- `npm audit --omit=dev --audit-level=high` PASS (0) · `npm audit` full tree FAIL (5 high, ISSUE-002)
+- GitHub Actions: NOT RUN (branch not pushed)
+
+Build:
+- `npm run build` PASS, no warnings (routes `/`, `/_not-found`)
+
+Deployment:
+- None
+
+Issues Resolved:
+- ISSUE-005 (turbopack root warning). ISSUE-004 (a) and (c).
+
+Issues Updated:
+- ISSUE-002 MITIGATED (audit gate scoped to production deps). ISSUE-004 (b) still open.
+
+Remaining:
+- Commit, push, and confirm both CI jobs green on GitHub.
+
+Blocked By:
+- Owner go-ahead to commit and push.
+
+Exact Next Action:
+- Commit T-100 on `feature/t-100-tooling-ci`, push, open PR, check the CI run.
+
+Production Readiness:
+- NOT READY
+
+---
+
 # Session Continuation Rules
 
 ## 1. Never Assume Previous Work Was Completed
