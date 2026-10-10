@@ -514,7 +514,7 @@ Do not implement jurisdiction-specific tax calculations without an explicitly ap
 | Production Supabase project      | NOT_STARTED |                  |
 | Production environment variables | NOT_STARTED |                  |
 | HTTPS                            | NOT_STARTED |                  |
-| Security headers                 | NOT_STARTED |                  |
+| Security headers                 | E2E_TESTED  | T-103, local production build 2026-10-11; not verified on a deployed URL |
 | Production domain                | NOT_STARTED |                  |
 | Authentication redirect URLs     | NOT_STARTED |                  |
 | Webhook URLs                     | NOT_STARTED |                  |

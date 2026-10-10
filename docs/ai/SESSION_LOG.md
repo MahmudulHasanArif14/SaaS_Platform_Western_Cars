@@ -503,6 +503,94 @@ Production Readiness:
 
 ---
 
+## SESSION-2026-10-11-1
+
+Date: 2026-10-11
+AI/Environment: Claude Code (Windows, local)
+Branch: feature/t-103-security-headers (from origin/main 298f468)
+Commit: 298f468 (all T-103 work uncommitted)
+Task: Close T-102; T-103 — security headers, CSP nonce, `poweredByHeader:false`, no browser source maps
+Objective: Nonce-based CSP and the TRD §12 headers on every response, proven by a header test.
+
+T-102:
+STATUS: COMPLETE — committed as `7c4e11d` + `3f31dd6`, PR #6 merged to `main` as `298f468`; CI runs 38092060412
+(PR) and 38092152082 (`main`) green on both jobs. (Corrects SESSION-2026-10-10-4, which recorded it as uncommitted.)
+
+T-103:
+STATUS: INCOMPLETE
+
+Completed:
+- CSP + static header builders, proxy with per-request nonce, `next.config.ts` flags and `headers()`.
+- Nonce passed to `next-themes` and to Radix's scroll-lock style (`get-nonce`).
+- E2E fixture that fails any test on a CSP violation; header, nonce, source-map and injection tests.
+- Read bundled docs first: Next.js 16 CSP guide, `proxy`, `instant` route segment config.
+
+Files Created:
+- src/proxy.ts, src/lib/security/headers.ts, src/lib/preview-routes.ts, src/lib/env/runtime.ts,
+  src/components/style-nonce.tsx, tests/e2e/{fixtures,security-headers.spec}.ts,
+  tests/unit/{security-headers,preview-routes}.test.ts
+
+Files Modified:
+- next.config.ts, src/app/layout.tsx, src/components/theme-provider.tsx, tests/e2e/{design-system,smoke}.spec.ts,
+  package.json, package-lock.json
+- docs/ai/{CURRENT_TASK,WORKSPACE_STATE,SESSION_LOG,ROADMAP,KNOWN_ISSUES,DECISIONS,PRODUCTION_READINESS}.md,
+  docs/security/SECURITY_CHECKLIST.md
+
+Database Changes:
+- None
+
+Integration Changes:
+- None
+
+Security Changes:
+- CSP (nonce, `strict-dynamic`, `frame-ancestors 'none'`), HSTS, nosniff, Referrer-Policy, Permissions-Policy,
+  X-Frame-Options; `X-Powered-By` removed; browser source maps off.
+- Preview routes are now blocked in the proxy in production.
+- No secrets read or written. Production probes used fake `*.example.test` / `sb_*_test_value` values only.
+
+Bugs found by the tests and probes, and fixed:
+- Strict `style-src` blocked sonner's injected stylesheet, Radix's scroll-lock style and server-rendered `style`
+  attributes (sidebar layout broke). See DECISIONS.md 2026-10-11.
+- `/design-system` returned 200 with page content in a production build once routes became dynamic (ISSUE-009).
+- The documented proxy matcher skips prefetch requests, which would have skipped the production block.
+
+Tests:
+- `npm run format:check` PASS · `npm run lint` PASS · `npm run typecheck` PASS · `npm test` PASS (47)
+- `npm run test:e2e` PASS (40); 0 axe violations; 0 CSP violations
+- `npm run check:bundle` PASS · `npm audit --omit=dev --audit-level=high` PASS (0)
+- Production-build probe with `curl` PASS (see CURRENT_TASK.md) · `next dev` in Chromium: 0 CSP violations
+- GitHub Actions: NOT RUN (not pushed)
+- Not tested: non-Chromium browsers, a deployed URL, securityheaders.com
+
+Build:
+- `npm run build` PASS (6 dynamic routes + proxy)
+
+Deployment:
+- None
+
+Issues Resolved:
+- ISSUE-008.
+
+Issues Discovered:
+- ISSUE-009 (MITIGATED), ISSUE-010 (accepted trade-off).
+
+Decisions:
+- CSP shape, style relaxations, dynamic rendering, `get-nonce` dependency — DECISIONS.md 2026-10-11.
+
+Remaining:
+- Commit, push, PR, CI green.
+
+Blocked By:
+- Owner go-ahead to commit and push.
+
+Exact Next Action:
+- Commit T-103 on `feature/t-103-security-headers`, push, open PR, check CI.
+
+Production Readiness:
+- NOT READY
+
+---
+
 # Session Continuation Rules
 
 ## 1. Never Assume Previous Work Was Completed
