@@ -6,6 +6,7 @@
 | Version | 0.1 (PROPOSED) |
 | Status | Draft — requirements only; nothing here is implemented |
 | Related | `MASTER_SPEC.md` (full scope), `TRD.md`, `APP_FLOW.md`, `ROADMAP.md` |
+| Day 0 check (2026-10-10) | VERIFIED: no FR is implemented. The repo contains only the create-next-app starter (`app/page.tsx`, routes `/` and `/_not-found`). See `docs/ai/WORKSPACE_STATE.md`. |
 
 ---
 
@@ -193,6 +194,12 @@ Priority: **M** must, **S** should, **C** could. Each FR is `PROPOSED` until ver
 | D6 | TURN: managed provider vs self-hosted coturn | R4 |
 | D7 | Retention period for chat, tickets, audit logs, salary records | R4 |
 | D8 | Who may view salary (HR only? Finance? Owner?) | R4 |
+
+Day 0 status (2026-10-10):
+- **D1 ANSWERED (owner, 2026-10-10): SaaS architecture with a multi-tenancy foundation.** Organizations are
+  first-class tenants from migration 0001; no single-org shortcuts. Still open under D1: whether org sign-up is
+  self-serve or operator-provisioned, and whether tenants are billed (neither blocks T-100..T-106; settle before T-107).
+- D2–D8 UNANSWERED; none block T-100..T-111.
 
 ## 11. Out of scope for this PRD
 The customer-facing AI website builder & hosting product — see `AI_WEBSITE_BUILDER_SPEC.md` (FUTURE, not authorized).

@@ -193,6 +193,79 @@ NOT_CONNECTED
 
 ---
 
+## SESSION-2026-10-10-1
+
+Date: 2026-10-10
+AI/Environment: Claude Code (Windows, local)
+Branch: main
+Commit: c7997c8 at start; 9227aab (5 approved skills) on branch chore/agent-skills
+Task: DAY 0 — repository discovery and documentation initialization (T-000)
+Objective: Record verified repo state, reconcile planning docs, create ADR stubs. No feature code.
+
+Completed:
+- Inventoried repo: create-next-app starter only (Next.js 16.4.0, React 19.3.0, TS 5.9.3, Tailwind 4.3.3, npm).
+- Ran checks and recorded results in WORKSPACE_STATE.md.
+- Reconciled planning docs with verified values (additive "Day 0" notes).
+- Created ADR-001..008 stubs (Decision: PENDING).
+- Ran `npx skills add vercel-labs/agent-skills` (project scope, copy mode) — left uncommitted for approval.
+
+Files Created:
+- docs/ai/decisions/ADR-001..008-*.md
+- .claude/skills/{deploy-to-vercel,vercel-cli-with-tokens,vercel-composition-patterns,vercel-optimize,vercel-react-best-practices,vercel-react-native-skills,vercel-react-view-transitions,web-design-guidelines,writing-guidelines}/ (by skills CLI, uncommitted)
+
+Files Modified:
+- docs/ai/WORKSPACE_STATE.md (rewritten with verified facts), CURRENT_TASK.md, SESSION_LOG.md, KNOWN_ISSUES.md, ROADMAP.md (Phase 0 status)
+- docs/product/PRD.md, docs/technical/{TRD,APP_FLOW,BACKEND_SCHEMA}.md, docs/design/UI_UX_DESIGN_BRIEF.md, docs/plan/IMPLEMENTATION_PLAN.md, docs/security/SECURITY_CHECKLIST.md
+- skills-lock.json (by skills CLI), graphify-out/cache/last_query_stamp (tool side effect)
+
+Files Deleted:
+- None by this session (5 `public/*.svg` deletions were already in the working tree)
+
+Database Changes:
+- None (no database exists)
+
+Integration Changes:
+- None
+
+Security Changes:
+- None. No secrets read or written; no `.env*` files exist.
+
+Tests:
+- `npm run lint` PASS · `npx tsc --noEmit` PASS · `npm test` FAIL (no script) · `npm audit` FAIL (5 high, dev chain)
+- `supabase status` NOT RUN (no `supabase/`, CLI not installed) · no unit/integration/RLS/E2E tests exist
+
+Build:
+- `npm run build` PASS (routes `/`, `/_not-found`)
+
+Deployment:
+- None
+
+Issues Discovered:
+- ISSUE-001..006 (KNOWN_ISSUES.md)
+
+Issues Resolved:
+- TRD §1 ADR number for job engine corrected (ADR-006 → ADR-003) to match TRD §16
+
+Known Blockers:
+- Org-creation mode undecided (T-107); Supabase CLI not installed (T-104/T-105)
+
+Decisions:
+- PRD D1 answered by owner: SaaS architecture with multi-tenancy foundation. ADR-001..008 still PENDING.
+
+Next Step:
+- Commit Day 0 docs when approved. Then T-100 on explicit instruction.
+
+Production Readiness:
+- NOT READY
+
+Integration Status:
+- NOT_CONNECTED (nothing implemented)
+
+Notes:
+- `docs/ai/COST_MATRIX.md` from the original Day 0 output list was not created.
+
+---
+
 # Session Continuation Rules
 
 ## 1. Never Assume Previous Work Was Completed

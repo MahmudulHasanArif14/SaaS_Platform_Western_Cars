@@ -3,6 +3,10 @@
 Status: **PROPOSED SQL — not a migration.** Copy into `supabase/migrations/<timestamp>_<name>.sql` one phase at a time, review, run `supabase db reset && supabase test db`.
 Logical model: `docs/ai/DATA_MODEL.md`. Conventions below are mandatory.
 
+Day 0 (VERIFIED 2026-10-10): the repo has no `supabase/` directory — no config, migrations, RLS policies, seed or
+pgTAP tests — and no Supabase dependency in `package.json`. The Supabase CLI is not installed locally. Zero tables
+exist; every `TBL-` below is PROPOSED. Whether a hosted Supabase project exists is UNKNOWN.
+
 ## 1. Conventions
 - PK `id uuid default gen_random_uuid()`; `created_at/updated_at timestamptz default now()` (+ `set_updated_at` trigger).
 - Tenant tables: `organization_id uuid not null`, RLS **enabled + forced**, `unique (organization_id, id)` so children can use composite FKs.

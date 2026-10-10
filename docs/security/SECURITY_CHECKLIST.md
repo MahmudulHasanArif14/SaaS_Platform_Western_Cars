@@ -3,6 +3,9 @@
 Rules live in `docs/ai/SECURITY_BASELINE.md`; threats in `THREAT_MODEL.md`. This file is **tickable evidence**.
 A box is ticked only with a link to a passing test, CI job, config screenshot or PR. Status: `NOT_STARTED | IMPLEMENTED | TESTED | VERIFIED`.
 
+Day 0 (2026-10-10): every check is `NOT_STARTED` — the repo has no auth, database, API routes, tests or CI to
+verify against (`docs/ai/WORKSPACE_STATE.md`). No secrets or `.env*` files are present in the repo.
+
 | Column | Meaning |
 |---|---|
 | How | The control |
@@ -59,12 +62,12 @@ A box is ticked only with a link to a passing test, CI job, config screenshot or
 | SEC-D02 | **Webhook signatures** | Stripe `constructEvent(rawBody, sig, secret)` with tolerance; Dojo signature per current docs; reject unsigned; dedupe by event ID; respond 2xx only after persisting | Tests: forged sig → 400; replayed event → processed once; old timestamp → rejected | NOT_STARTED | |
 | SEC-D03 | **Source maps not exposed** | `productionBrowserSourceMaps: false`; if Sentry uploads maps, delete after upload (`deleteSourcemapsAfterUpload`) | `curl https://app/_next/static/**/*.js.map` → 404 | NOT_STARTED | |
 | SEC-D04 | **Sensitive data removed from logs** | Logger redaction paths (password, token, secret, authorization, cookie, card, iban, salary); Sentry `sendDefaultPii:false` + `beforeSend` scrub; no request bodies logged on auth/payment routes | Unit test logger redaction; review Sentry event sample | NOT_STARTED | |
-| SEC-D05 | **Vulnerable dependencies updated** | Lockfile committed; `pnpm audit --audit-level=high` (or npm) in CI; Dependabot/Renovate weekly; review new deps (ADR) | CI job green; 0 high/critical | NOT_STARTED | |
+| SEC-D05 | **Vulnerable dependencies updated** | Lockfile committed; `pnpm audit --audit-level=high` (or npm) in CI; Dependabot/Renovate weekly; review new deps (ADR) | CI job green; 0 high/critical | NOT_STARTED | Day 0: `package-lock.json` committed (npm). `npm audit` = 5 high (ISSUE-002). No CI, no Dependabot/Renovate. |
 | SEC-D06 | Security headers | CSP (nonce), HSTS, nosniff, Referrer-Policy, Permissions-Policy, `frame-ancestors 'none'`, `poweredByHeader:false` | securityheaders.com / test asserting headers | NOT_STARTED | |
 | SEC-D07 | Error leakage | Production errors show safe message + correlation ID, no stack/SQL | Force error in staging → inspect response | NOT_STARTED | |
 | SEC-D08 | Environment separation | Live payment keys only in prod; staging uses separate Supabase project | Env audit | NOT_STARTED | |
 | SEC-D09 | Supabase hardening | Data API not exposing `private`; email confirm on; OTP expiry short; SMTP custom; Network restrictions where plan allows; PITR/backups configured | Settings review | NOT_STARTED | |
-| SEC-D10 | Agent skills reviewed | `npx skills add vercel-labs/agent-skills` output reviewed in diff; only used skills committed; no unreviewed scripts | PR review | NOT_STARTED | |
+| SEC-D10 | Agent skills reviewed | `npx skills add vercel-labs/agent-skills` output reviewed in diff; only used skills committed; no unreviewed scripts | PR review | NOT_STARTED | 2026-10-10: owner approved 5 markdown-only skills (commit `9227aab`, branch `chore/agent-skills`); 4 others (`deploy-to-vercel`, `vercel-optimize`, `vercel-cli-with-tokens`, `vercel-react-native-skills`) removed, not committed. Line-by-line review of the 5 not done. |
 
 ## E. Release gate
 

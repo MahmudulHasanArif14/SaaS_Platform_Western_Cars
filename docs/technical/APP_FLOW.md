@@ -3,6 +3,10 @@
 Status: PROPOSED. Each flow lists **Actor → Screens → Steps → Server checks → States → Failure paths**.
 Routes use `/[org]/…` = `(dashboard)/[orgSlug]/…`; org slug is re-verified server-side on every request.
 
+Day 0 (VERIFIED 2026-10-10, `next build` route table): the only existing routes are `/` (create-next-app starter,
+`app/page.tsx`) and `/_not-found`. No flow below is implemented; there is no auth, middleware/proxy, API route or
+server action. FLOW-01…16 all remain PROPOSED.
+
 ---
 
 ## 0. Global navigation map

@@ -146,7 +146,9 @@ Nothing dependent on these should be considered production-ready until verified.
 Status:
 
 ```text
-NOT_STARTED
+IN_PROGRESS
+Discovery (T-000) done 2026-10-10 — evidence: WORKSPACE_STATE.md.
+Open: ADR-001..008 are PENDING stubs; PRD D1 unanswered; COST_MATRIX.md missing; foundation code not started.
 ```
 
 ## Goals

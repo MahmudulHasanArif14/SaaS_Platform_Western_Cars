@@ -2,78 +2,63 @@
 
 ## Stage
 
-DAY 0 — Architecture and Repository Discovery
+DAY 0 — Architecture and Repository Discovery (T-000)
 
 ## Status
 
-IN_PROGRESS
+COMPLETED (discovery scope) — 2026-10-10, with the open items listed below.
 
-## Objective
+No task is currently authorized. The next task below is a recommendation only.
 
-Understand the existing repository and prepare the production architecture before implementing business features.
+## Evidence
 
-## Required Work
+| Acceptance criterion | Result | Evidence |
+|---|---|---|
+| Repository understood | MET | `docs/ai/WORKSPACE_STATE.md` |
+| Existing functionality documented | MET | create-next-app starter only; routes `/`, `/_not-found` (WORKSPACE_STATE) |
+| Architecture documented | MET (target design, nothing built) | `docs/ai/ARCHITECTURE.md`, `docs/technical/TRD.md` §1.1 |
+| Security boundaries documented | MET (rules/threats, no controls built) | `SECURITY_BASELINE.md`, `THREAT_MODEL.md`, `docs/security/SECURITY_CHECKLIST.md` (all NOT_STARTED) |
+| Database domains documented | MET (proposal, no migrations) | `DATA_MODEL.md`, `docs/technical/BACKEND_SCHEMA.md` |
+| Development phases documented | MET | `ROADMAP.md`, `docs/plan/IMPLEMENTATION_PLAN.md` |
+| External dependencies documented | MET (none connected) | `INTEGRATION_STATUS.md` |
+| lint/typecheck/test/build results recorded | MET | table below |
 
-1. Inspect the existing repository.
-2. Inspect package/dependency versions.
-3. Inspect current Next.js architecture.
-4. Inspect Supabase configuration.
-5. Inspect current authentication.
-6. Inspect database migrations.
-7. Inspect existing API/server actions.
-8. Inspect existing tests.
-9. Inspect deployment configuration.
-10. Run existing checks.
-11. Create project AI documentation.
-12. Create security threat model.
-13. Create database domain model.
-14. Create implementation roadmap.
-15. Identify required external services/accounts.
+Checks run on commit `c7997c8` + working tree (npm 10.9.9, Node v22.23.3):
 
-## Do NOT Implement Yet
+| Check | Result |
+|---|---|
+| `npm install` | PASS (lockfile unchanged) |
+| `npm run lint` | PASS |
+| `npx tsc --noEmit` | PASS (no `typecheck` script) |
+| `npm test` | FAIL — no `test` script, no test framework |
+| `npm run build` | PASS (Next.js 16.4.0, Turbopack) |
+| `npm audit` | FAIL — 5 high in dev lint chain (ISSUE-002) |
+| `supabase status` | NOT RUN — no `supabase/` directory, CLI not installed |
 
-Do not implement:
+## Open items (not done in Day 0)
 
-- Domain CRUD
-- DNS
-- Hosting
-- Payments
-- Stripe
-- Dojo
-- CRM
-- Staff chat
-- WebRTC
-- HR
-- Salary
+- `docs/ai/COST_MATRIX.md` (listed in the original Day 0 required output) does not exist.
+- ADR-001..008 are stubs with `Decision: PENDING` (`docs/ai/decisions/`).
+- PRD decision D1 ANSWERED 2026-10-10: SaaS with multi-tenancy foundation (recorded in PRD §10, ADR-002 context).
+  Sub-question still open before T-107: self-serve vs operator-provisioned org creation.
+- Agent skills: 5 approved and committed (`9227aab`, branch `chore/agent-skills`); 4 removed.
+- Day 0 docs and ADR stubs are still uncommitted.
+- Issues found: `docs/ai/KNOWN_ISSUES.md` ISSUE-001..006.
 
-Those come after the architecture foundation.
+## Recommended next task (NOT STARTED — requires explicit instruction)
 
-## Required Output
+**T-100** — Strict TS, ESLint rules (`no-restricted-imports` for admin/provider SDKs, no
+`dangerouslySetInnerHTML`), Prettier, Vitest, Playwright, GitHub Actions skeleton.
+Satisfies TR-001, SEC-D05. Done when: CI green on empty app. See `docs/plan/IMPLEMENTATION_PLAN.md` Phase 1.
 
-Create/update:
+Inputs T-100 needs (from Day 0):
 
-```text
-docs/ai/PROJECT_CONTEXT.md
-docs/ai/ARCHITECTURE.md
-docs/ai/DATA_MODEL.md
-docs/ai/THREAT_MODEL.md
-docs/ai/SECURITY_BASELINE.md
-docs/ai/ROADMAP.md
-docs/ai/ENVIRONMENT_MATRIX.md
-docs/ai/INTEGRATION_STATUS.md
-docs/ai/COST_MATRIX.md
-docs/ai/PRODUCTION_READINESS.md
-```
+- Package manager is npm; add `typecheck`, `test`, `test:e2e` scripts and update `CLAUDE.md` commands.
+- Decide `src/` vs root `app/` (ADR-001) before adding structure.
+- Decide how the `npm audit` gate treats ISSUE-002.
+- Read `node_modules/next/dist/docs/` first (Next.js 16.4.0, per `AGENTS.md`).
+- New dev dependencies must be recorded in `docs/ai/DECISIONS.md`.
 
-## Acceptance Criteria
+## Do NOT implement yet
 
-- Repository understood
-- Existing functionality documented
-- Architecture documented
-- Security boundaries documented
-- Database domains documented
-- Development phases documented
-- External dependencies documented
-- Existing lint/typecheck/test/build results recorded
-
-Do not proceed to feature implementation until this task is complete.
+Domain CRUD · DNS · Hosting · Payments · Stripe · Dojo · CRM · Staff chat · WebRTC · HR · Salary.

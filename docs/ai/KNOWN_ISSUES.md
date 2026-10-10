@@ -79,14 +79,105 @@ None
 ## MEDIUM
 
 ```text id="4kq9dc"
-None
+ISSUE-002
+```
+
+### ISSUE-002 — 5 high-severity advisories in the lint toolchain
+
+```text
+Status: OPEN
+Severity: MEDIUM
+Area: Dependencies (dev only)
+Environment: LOCAL
+First detected: 2026-10-10 (npm audit)
+Actual: braces (GHSA-vfj7-8cjw-p6xm, DoS) -> micromatch -> fast-glob -> @next/eslint-plugin-next -> eslint-config-next 16.4.0.
+Impact: Dev/lint dependency chain. Will fail the planned CI gate `npm audit --audit-level=high` (TRD §11, SEC-D05).
+Workaround: None verified. npm's suggested fix (`npm audit fix --force`) downgrades eslint-config-next to
+            14.2.35 — a breaking change; do not apply.
+Proposed fix: Decide in T-100 (wait for upstream fix, npm `overrides`, or scope the audit gate to production deps).
+Related task: T-100
+Related files: package.json, package-lock.json
 ```
 
 ## LOW
 
 ```text id="m7t3za"
-None
+ISSUE-001, ISSUE-003, ISSUE-004, ISSUE-005, ISSUE-006
 ```
+
+### ISSUE-001 — Home page references deleted images
+
+```text
+Status: OPEN
+Severity: LOW
+Area: UI (starter page)
+First detected: 2026-10-10
+Actual: app/page.tsx renders <Image src="/next.svg"> and "/vercel.svg"; both files are deleted in the working
+        tree (uncommitted) and public/ is empty. Build still passes.
+Impact: Broken images on `/` at runtime (inferred from the files; not observed in a browser this session).
+Proposed fix: Replace the starter page in T-102 (app shell), or restore the files.
+Related files: app/page.tsx, public/
+```
+
+### ISSUE-003 — .gitignore would ignore .env.example
+
+```text
+Status: OPEN
+Severity: LOW
+Area: Environment / repo hygiene
+First detected: 2026-10-10
+Actual: .gitignore has `.env*` with no `!.env.example` exception (SETUP.md §4 expects one). No .env files exist yet.
+Impact: The planned committed .env.example (T-101) would be silently ignored.
+Proposed fix: Add `!.env.example` in T-101.
+Related files: .gitignore
+```
+
+### ISSUE-004 — Docs and tooling config do not match the repo layout / package manager
+
+```text
+Status: OPEN
+Severity: LOW
+Area: Documentation / tooling
+First detected: 2026-10-10
+Actual: (a) CLAUDE.md and TRD §2 assume src/app, src/modules, src/lib; repo has root app/ and `@/*` -> `./*`.
+        (b) .claude/settings.json allowlists `pnpm lint/test/typecheck/build`; package manager is npm.
+        (c) CLAUDE.md commands use `<pm>` placeholders; no typecheck/test/test:e2e scripts exist.
+Proposed fix: Resolve in T-100 (ADR-001 for src/; add scripts; update CLAUDE.md and settings).
+Related files: CLAUDE.md, .claude/settings.json, tsconfig.json, package.json
+```
+
+### ISSUE-005 — Turbopack workspace-root warning on build
+
+```text
+Status: OPEN
+Severity: LOW
+Area: Build (local environment)
+First detected: 2026-10-10 (npm run build)
+Actual: Next.js warns that it ignored a package-lock.json in the user home directory because it is outside the
+        Git repository, and suggests setting `turbopack.root`. Build passes.
+Impact: Warning only, specific to this machine.
+Proposed fix: Remove the stray lockfile or set `turbopack.root` in T-100.
+Related files: next.config.ts
+```
+
+### ISSUE-006 — Leftover generation-prompt text and missing file in docs/ai
+
+```text
+Status: OPEN
+Severity: LOW
+Area: Documentation
+First detected: 2026-10-10
+Actual: Several docs end with the prompt that generated a document rather than document content (seen at the
+        end of ARCHITECTURE.md, DATA_MODEL.md, THREAT_MODEL.md, ROADMAP.md, PROJECT_CONTEXT.md,
+        INTEGRATION_STATUS.md, PRODUCTION_READINESS.md and this file). WORKSPACE_STATE.md had the same and was
+        rewritten. docs/ai/COST_MATRIX.md (Day 0 required output) does not exist.
+Impact: An agent reading a file tail may treat the stray prompt as an instruction.
+Proposed fix: Remove the trailing prompt blocks; create COST_MATRIX.md. Needs owner go-ahead (doc cleanup).
+```
+
+Not assessed on Day 0 (nothing exists to assess): authentication, authorization, RLS, database, payments,
+integrations, deployment, accessibility, performance. Missing test framework, CI, Supabase and env validation
+are planned work (T-100..T-111), not bugs.
 
 ---
 
@@ -834,7 +925,8 @@ Maintain:
 ## BLOCKED
 
 ```text id="b1x7m3"
-None
+T-107 — org-creation mode (self-serve vs operator-provisioned) undecided; D1 itself answered 2026-10-10 (SaaS, multi-tenant). Required: product owner.
+T-104 / T-105 — Supabase CLI not installed and no supabase/ directory. Required: install CLI locally when the task starts.
 ```
 
 Each blocked item must include:
@@ -1043,19 +1135,19 @@ None
 ## Open Medium
 
 ```text id="3j9p6c"
-None
+ISSUE-002
 ```
 
 ## Open Low
 
 ```text id="6x2r8d"
-None
+ISSUE-001, ISSUE-003, ISSUE-004, ISSUE-005, ISSUE-006
 ```
 
 ## Blocked
 
 ```text id="4q7m0z"
-None
+T-107 (org-creation mode), T-104 / T-105 (Supabase CLI) — see section 20
 ```
 
 ## Deferred
@@ -1067,7 +1159,7 @@ None
 ## Last Updated
 
 ```text
-YYYY-MM-DD
+2026-10-10
 ```
 
 Create or update `docs/ai/KNOWN_ISSUES.md`.
