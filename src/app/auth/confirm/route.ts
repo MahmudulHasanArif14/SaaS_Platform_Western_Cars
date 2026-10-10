@@ -1,4 +1,5 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { redirect } from "next/navigation";
+import type { NextRequest } from "next/server";
 
 import { FORGOT_PASSWORD_PATH, RESET_PASSWORD_PATH } from "@/lib/routes";
 import { emailTokenSchema } from "@/modules/auth/auth.schema";
@@ -13,11 +14,11 @@ export async function GET(request: NextRequest) {
     type: searchParams.get("type"),
   });
 
+  // Path-only redirects: `request.url` can carry the server's bind host
+  // instead of the one the browser used, and the session cookies would not
+  // follow the user to a different host.
   if (parsed.success && (await verifyEmailToken(parsed.data)).ok) {
-    return NextResponse.redirect(new URL(RESET_PASSWORD_PATH, request.url));
+    redirect(RESET_PASSWORD_PATH);
   }
-
-  const retry = new URL(FORGOT_PASSWORD_PATH, request.url);
-  retry.searchParams.set("error", "link");
-  return NextResponse.redirect(retry);
+  redirect(`${FORGOT_PASSWORD_PATH}?error=link`);
 }
