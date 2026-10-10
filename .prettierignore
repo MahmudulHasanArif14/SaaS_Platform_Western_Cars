@@ -1,0 +1,17 @@
+# Generated / vendored
+.next
+node_modules
+coverage
+playwright-report
+test-results
+package-lock.json
+skills-lock.json
+next-env.d.ts
+graphify-out
+.claude
+.impeccable
+
+# Prose is not auto-formatted
+*.md
+docs
+prompts
