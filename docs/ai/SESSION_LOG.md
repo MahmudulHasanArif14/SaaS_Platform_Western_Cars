@@ -271,12 +271,16 @@ Notes:
 Date: 2026-10-10
 AI/Environment: Claude Code (Windows, local)
 Branch: feature/t-100-tooling-ci
-Commit: 154af40 (all T-100 work uncommitted)
+Commit: 154af40 at start; ca997d6 + 00caa8b; merged to main as 3c6b99c
 Task: T-100 — strict TS, ESLint guards, Prettier, Vitest, Playwright, GitHub Actions skeleton
 Objective: Finish and verify the T-100 work already present in the working tree.
 
 Task:
-STATUS: INCOMPLETE
+STATUS: COMPLETE
+
+Verification:
+- Committed as `ca997d6` + `00caa8b`, pushed, PR #1 merged to `main` as `3c6b99c`.
+- GitHub Actions: run 38038898143 (PR) and 38038935415 (`main`) — both jobs succeeded, all steps green.
 
 Completed:
 - Verified the existing T-100 working-tree changes (src/ move, strict TS flags, ESLint TR-001 + react/no-danger
@@ -311,7 +315,7 @@ Tests:
 - `npm run format:check` PASS · `npm run lint` PASS · `npm run typecheck` PASS · `npm test` PASS (6 tests)
 - `npm run test:e2e` PASS (2 tests, chromium, production build)
 - `npm audit --omit=dev --audit-level=high` PASS (0) · `npm audit` full tree FAIL (5 high, ISSUE-002)
-- GitHub Actions: NOT RUN (branch not pushed)
+- GitHub Actions: PASS on PR #1 and `main` (see Verification)
 
 Build:
 - `npm run build` PASS, no warnings (routes `/`, `/_not-found`)
@@ -325,14 +329,88 @@ Issues Resolved:
 Issues Updated:
 - ISSUE-002 MITIGATED (audit gate scoped to production deps). ISSUE-004 (b) still open.
 
-Remaining:
-- Commit, push, and confirm both CI jobs green on GitHub.
+Notes:
+- Dependabot opened PRs after the merge: `typescript` 7.0.2 (CI fails), `eslint` 10.12.0 and `@types/node` 26.6.4
+  (CI passes; the latter conflicts with the Node 22 pin). Not merged; owner to review.
+
+Next Task:
+- T-101 (env validation) — recommendation only, not started.
 
 Blocked By:
-- Owner go-ahead to commit and push.
+NONE
+
+Production Readiness:
+- NOT READY
+
+---
+
+## SESSION-2026-10-10-3
+
+Date: 2026-10-10
+AI/Environment: Claude Code (Windows, local)
+Branch: feature/t-101-env-validation (from origin/main 3c6b99c)
+Commit: 3c6b99c (all T-101 work uncommitted)
+Task: T-101 — `lib/env` server/client Zod validation + `.env.example`
+Objective: Fail the build on missing/invalid configuration in deployed environments; keep secrets server-only.
+
+Task:
+STATUS: INCOMPLETE
+
+Completed:
+- `src/lib/env/{schema,server,client}.ts`; `validateEnv(process.env)` wired into `next.config.ts`.
+- `APP_ENV` strictness model and `VERCEL_ENV` guard (DECISIONS.md).
+- ESLint guard: no raw `process.env` in `src/**` outside `src/lib/env`, with a test.
+- `scripts/check-client-bundle.mjs` + `npm run check:bundle` (SEC-C02); two new CI steps.
+- `!.env.example` in `.gitignore`. Zod 4.6.5 added (runtime dependency).
+- Read `node_modules/next/dist/docs` (environment variables, `next.config.ts`, `server-only`) before writing code.
+
+Files Created:
+- src/lib/env/schema.ts, src/lib/env/server.ts, src/lib/env/client.ts, tests/unit/env.test.ts,
+  scripts/check-client-bundle.mjs
+
+Files Modified:
+- next.config.ts, eslint.config.mjs, tests/security/lint-guards.test.ts, .github/workflows/ci.yml, .gitignore,
+  package.json, package-lock.json
+- docs/ai/{CURRENT_TASK,WORKSPACE_STATE,SESSION_LOG,ROADMAP,KNOWN_ISSUES,DECISIONS,PRODUCTION_READINESS}.md,
+  docs/security/SECURITY_CHECKLIST.md
+
+Database Changes:
+- None
+
+Integration Changes:
+- None
+
+Security Changes:
+- Server env module is `server-only`; importing it from a client component fails the build (probed, reverted).
+- Secret key in a `NEXT_PUBLIC_` Supabase variable is rejected. Validation errors never print values.
+- Client-bundle scan for secret-shaped strings and server-only variable names.
+- No secrets read or written. Only fake `*.example.test` / `sb_*_test_value` strings used in tests and probes.
+
+Tests:
+- `npm run format:check` PASS · `npm run lint` PASS · `npm run typecheck` PASS · `npm test` PASS (23 tests)
+- `APP_ENV=production npm run build` without variables FAILS as required; with complete fake values PASS
+- `npm run check:bundle` PASS (planted secret detected) · `npm run test:e2e` PASS (2)
+- `npm audit --omit=dev --audit-level=high` PASS (0)
+- GitHub Actions: NOT RUN (not pushed)
+
+Build:
+- `npm run build` PASS, no warnings
+
+Deployment:
+- None
+
+Issues Updated:
+- ISSUE-003 resolved: `.gitignore` fixed; `.env.example` created at the owner's explicit request (the
+  `.env.*` deny rule in `.claude/settings.json` blocks the agent's file tools for it).
+
+Remaining:
+- PR for `feature/t-101-env-validation` and a green CI run.
+
+Blocked By:
+- PR must be opened by the owner (no GitHub CLI on this machine).
 
 Exact Next Action:
-- Commit T-100 on `feature/t-100-tooling-ci`, push, open PR, check the CI run.
+- Open the PR, then check both CI jobs.
 
 Production Readiness:
 - NOT READY
