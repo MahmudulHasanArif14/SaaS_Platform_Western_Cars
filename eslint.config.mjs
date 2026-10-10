@@ -62,6 +62,22 @@ const eslintConfig = defineConfig([
       "no-restricted-imports": ["error", uiRestrictedImports],
     },
   },
+  {
+    // TR §14: configuration is read through @/lib/env/{server,client} only.
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/lib/env/**"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector:
+            "MemberExpression[object.name='process'][property.name='env']",
+          message:
+            "Read configuration from @/lib/env/server or @/lib/env/client, not process.env.",
+        },
+      ],
+    },
+  },
   prettier,
   // Override default ignores of eslint-config-next.
   globalIgnores([

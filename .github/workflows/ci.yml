@@ -28,7 +28,14 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
+      - name: Build must fail when production configuration is missing
+        run: |
+          if APP_ENV=production npm run build; then
+            echo "Build succeeded without required environment variables" >&2
+            exit 1
+          fi
       - run: npm run build
+      - run: npm run check:bundle
       # Production dependencies only; the dev-only lint chain is tracked in
       # docs/ai/KNOWN_ISSUES.md (ISSUE-002).
       - run: npm audit --omit=dev --audit-level=high

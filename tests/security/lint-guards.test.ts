@@ -40,6 +40,17 @@ describe("lint guards", () => {
     ).not.toContain("no-restricted-imports");
   });
 
+  it("blocks raw process.env outside lib/env", async () => {
+    const code = "export const url = process.env.NEXT_PUBLIC_APP_URL;\n";
+
+    expect(
+      await ruleIds(code, "src/modules/domains/domains.service.ts"),
+    ).toContain("no-restricted-syntax");
+    expect(await ruleIds(code, "src/lib/env/client.ts")).not.toContain(
+      "no-restricted-syntax",
+    );
+  });
+
   it("blocks dangerouslySetInnerHTML", async () => {
     const code =
       'export default function X() {\n  return <div dangerouslySetInnerHTML={{ __html: "<b>x</b>" }} />;\n}\n';
