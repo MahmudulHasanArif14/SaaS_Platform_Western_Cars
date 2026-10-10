@@ -3,7 +3,8 @@ import { beforeAll, describe, expect, it } from "vitest";
 
 // Proves the ESLint guards for TR-001 and SEC-A03 are active, so a config
 // change that silently drops them fails the test run.
-describe("lint guards", () => {
+// ESLint cold start (config, parser, plugins) can take several seconds.
+describe("lint guards", { timeout: 30_000 }, () => {
   let eslint: ESLint;
 
   beforeAll(() => {
