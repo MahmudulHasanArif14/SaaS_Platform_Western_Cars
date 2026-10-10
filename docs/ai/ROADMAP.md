@@ -208,7 +208,7 @@ CHANGELOG.md
 Status:
 
 ```text
-IN_PROGRESS — T-100 (tooling + CI skeleton) COMPLETED 2026-10-10 (PR #1, CI green on main). T-101 (env validation) IMPLEMENTED, locally verified, not yet completed. T-102+ NOT_STARTED.
+IN_PROGRESS — T-100 (tooling + CI skeleton) COMPLETED 2026-10-10 (PR #1, CI green on main). T-101 (env validation) COMPLETED 2026-10-10 (PR #5, CI green on main). T-102 (tokens, theming, app shell, base components) IMPLEMENTED, locally verified, not yet completed. T-103+ NOT_STARTED.
 ```
 
 ## Goals

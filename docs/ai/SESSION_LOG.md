@@ -349,12 +349,15 @@ Production Readiness:
 Date: 2026-10-10
 AI/Environment: Claude Code (Windows, local)
 Branch: feature/t-101-env-validation (from origin/main 3c6b99c)
-Commit: 3c6b99c (all T-101 work uncommitted)
+Commit: 3c6b99c at start; df6e17a + 47d33d7; merged to main as e65fc07
 Task: T-101 — `lib/env` server/client Zod validation + `.env.example`
 Objective: Fail the build on missing/invalid configuration in deployed environments; keep secrets server-only.
 
 Task:
-STATUS: INCOMPLETE
+STATUS: COMPLETE
+
+Verification:
+- Committed as `df6e17a` + `47d33d7`; PR #5 merged to `main` as `e65fc07`; CI runs 38039995101 (PR) and 38040051372 (`main`) green on both jobs.
 
 Completed:
 - `src/lib/env/{schema,server,client}.ts`; `validateEnv(process.env)` wired into `next.config.ts`.
@@ -391,7 +394,7 @@ Tests:
 - `APP_ENV=production npm run build` without variables FAILS as required; with complete fake values PASS
 - `npm run check:bundle` PASS (planted secret detected) · `npm run test:e2e` PASS (2)
 - `npm audit --omit=dev --audit-level=high` PASS (0)
-- GitHub Actions: NOT RUN (not pushed)
+- GitHub Actions: PASS on PR #5 and `main` (see Verification)
 
 Build:
 - `npm run build` PASS, no warnings
@@ -403,14 +406,97 @@ Issues Updated:
 - ISSUE-003 resolved: `.gitignore` fixed; `.env.example` created at the owner's explicit request (the
   `.env.*` deny rule in `.claude/settings.json` blocks the agent's file tools for it).
 
-Remaining:
-- PR for `feature/t-101-env-validation` and a green CI run.
+Next Task:
+- T-102 (design tokens, app shell) — recommendation only, not started.
 
 Blocked By:
-- PR must be opened by the owner (no GitHub CLI on this machine).
+NONE
+
+Production Readiness:
+- NOT READY
+
+---
+
+## SESSION-2026-10-10-4
+
+Date: 2026-10-10
+AI/Environment: Claude Code (Windows, local)
+Branch: feature/t-102-app-shell (from origin/main e65fc07)
+Commit: e65fc07 (all T-102 work uncommitted)
+Task: T-102 — design tokens, next-themes, app shell, base components
+Objective: Tokens and theming from the design brief, a working app shell, and the base components, verified by
+axe and screenshots in light, dark and mobile.
+
+Task:
+STATUS: INCOMPLETE
+
+Completed:
+- shadcn/ui initialised (CLI, radix-nova); tokens from brief §3 in globals.css; light/dark/system theming.
+- AppShell (sidebar, mobile sheet, top bar, skip link), CommandPalette, PageHeader.
+- DataTable (TanStack Table v9), StatusBadge, ConfirmDialog, Empty/Error/Forbidden states, toasts, skeleton.
+- not-found and error pages; starter home page replaced.
+- `/design-system/**` preview routes (404 in production).
+- E2E suite with axe and screenshots; DESIGN_SYSTEM.md written.
+- Read bundled docs first: Next.js 16 `error.js` (`retry` prop), TanStack Table v9 skills, shadcn CLI.
+
+Files Created:
+- components.json, src/components/**, src/hooks/use-mobile.ts, src/lib/{app,utils}.ts,
+  src/app/{not-found,error}.tsx, src/app/design-system/**, tests/e2e/design-system.spec.ts,
+  tests/unit/navigation.test.ts
+
+Files Modified:
+- src/app/{globals.css,layout.tsx,page.tsx}, tests/security/lint-guards.test.ts (30 s timeout: ESLint cold
+  start), .github/workflows/ci.yml (upload test-results), package.json, package-lock.json
+- docs/design/DESIGN_SYSTEM.md, docs/ai/{CURRENT_TASK,WORKSPACE_STATE,SESSION_LOG,ROADMAP,KNOWN_ISSUES,DECISIONS,
+  PRODUCTION_READINESS}.md
+
+Database Changes:
+- None
+
+Integration Changes:
+- None
+
+Security Changes:
+- Preview routes gated on `serverEnv.APP_ENV` (first consumer of lib/env); verified 404 in a production build.
+- Error page shows the digest only. `shadcn` CLI package moved to devDependencies to keep the production audit clean.
+- No secrets read or written.
+
+Bugs found by the tests and fixed:
+- Command menu crashed the page (cmdk items rendered outside `<Command>`).
+- Destructive button failed colour contrast in both themes (now solid with a foreground token).
+- Nested `<main>` landmarks (SidebarInset rendered `main`).
+
+Tests:
+- `npm run format:check` PASS · `npm run lint` PASS · `npm run typecheck` PASS · `npm test` PASS (27)
+- `npm run test:e2e` PASS (29); axe 0 violations; 17 screenshots reviewed
+- `npm run check:bundle` PASS · `npm audit --omit=dev --audit-level=high` PASS (0)
+- GitHub Actions: NOT RUN (not pushed)
+- Not tested: screen readers, real devices, non-Chromium browsers
+
+Build:
+- `npm run build` PASS (6 static routes)
+
+Deployment:
+- None
+
+Issues Resolved:
+- ISSUE-001 (starter page images).
+
+Issues Discovered:
+- ISSUE-007 (border contrast below 3:1), ISSUE-008 (theme script needs CSP nonce in T-103).
+
+Notes:
+- One E2E run lost its web server mid-run while unit tests ran concurrently; a clean run alone passed 29/29.
+  Not reproduced; watch for it in CI.
+
+Remaining:
+- Commit, push, PR, CI green.
+
+Blocked By:
+- Owner go-ahead to commit and push.
 
 Exact Next Action:
-- Open the PR, then check both CI jobs.
+- Commit T-102 on `feature/t-102-app-shell`, push, open PR, check CI.
 
 Production Readiness:
 - NOT READY

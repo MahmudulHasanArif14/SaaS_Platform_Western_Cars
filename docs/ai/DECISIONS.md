@@ -82,3 +82,36 @@ Security impact: missing or malformed configuration stops the build instead of s
 messages contain variable names only. Residual risk: a non-Vercel production host with `APP_ENV` unset gets the
 lenient rules — set `APP_ENV` explicitly in every deployed environment.
 Cost impact: none. Migration impact: deployed environments must define `APP_ENV`.
+
+### 2026-10-10 — UI dependencies (T-102)
+
+Decision: Adopt shadcn/ui (`radix-nova` style, Radix base) as generated source in `src/components/ui`, with:
+
+| Package | Type | Why |
+|---|---|---|
+| `radix-ui`, `class-variance-authority`, `cn`, `tw-animate-css` | runtime | Required by the generated shadcn components (`cn` is shadcn's class merger) |
+| `lucide-react` | runtime | Icon set named in the design brief |
+| `cmdk` | runtime | Command menu (⌘K) |
+| `sonner` | runtime | Toasts |
+| `next-themes` | runtime | Light / dark / system switching without flash |
+| `@tanstack/react-table` 9 | runtime | Table engine named in the brief; v9 API (`useTable`, `tableFeatures`) |
+| `shadcn` | dev | CLI, and `shadcn/tailwind.css` imported at build time |
+| `@axe-core/playwright` | dev | Automated WCAG checks in E2E |
+
+`shadcn` was installed by its own CLI as a runtime dependency; moved to dev because it pulls the CLI toolchain
+(`ts-morph`, `fast-glob` → `braces`, GHSA-vfj7-8cjw-p6xm) and failed the production audit gate. It is only needed
+at build time.
+Alternatives considered: hand-written primitives (accessibility cost); Base UI variant (Radix is the documented
+stack); a custom table (the brief names TanStack).
+Security impact: `npm audit --omit=dev` = 0 vulnerabilities. No component uses `dangerouslySetInnerHTML`.
+Cost impact: none. Migration impact: none.
+
+### 2026-10-10 — Token mapping and preview routes (T-102)
+
+Decision: The brief's tokens are the source of truth in `globals.css`; shadcn's semantic names are aliases of them.
+Two contrast deviations from the brief: dark `--primary-foreground` and `--danger-foreground` are near-black, and
+status colours are not used as body-text colours. The app shell is mounted only on `/design-system/**`, which
+returns 404 when `APP_ENV=production`; the real `(dashboard)/[orgSlug]` layout waits for auth and org resolution.
+Reason: axe-verified AA contrast; no unauthenticated "app" pages that imply functionality that does not exist.
+Security impact: preview routes contain sample content only and are not served in production.
+Cost impact: none. Migration impact: none.

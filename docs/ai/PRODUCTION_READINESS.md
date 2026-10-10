@@ -52,14 +52,14 @@ Never mark a feature production-ready based only on a successful local build.
 | Next.js configured        | NOT_STARTED |                  |
 | TypeScript configured     | NOT_STARTED |                  |
 | Tailwind configured       | NOT_STARTED |                  |
-| shadcn/ui configured      | NOT_STARTED |                  |
-| Dark mode                 | NOT_STARTED |                  |
-| Light mode                | NOT_STARTED |                  |
-| System theme support      | NOT_STARTED |                  |
-| Responsive layout         | NOT_STARTED |                  |
-| Accessibility baseline    | NOT_STARTED |                  |
-| Error boundaries          | NOT_STARTED |                  |
-| Loading states            | NOT_STARTED |                  |
+| shadcn/ui configured | IMPLEMENTED | `components.json`, `src/components/ui/*` (T-102) |
+| Dark mode | E2E_TESTED | axe + screenshots on preview routes, local 2026-10-10 (T-102) |
+| Light mode | E2E_TESTED | axe + screenshots on preview routes, local 2026-10-10 (T-102) |
+| System theme support | IMPLEMENTED | `next-themes` `enableSystem`; selectable in the toggle; not covered by a test |
+| Responsive layout | E2E_TESTED | 390 px and 1440 px on preview routes; no real devices (T-102) |
+| Accessibility baseline | E2E_TESTED | axe WCAG 2.2 AA, 0 violations on preview routes; no screen-reader testing (T-102) |
+| Error boundaries | IMPLEMENTED | `src/app/error.tsx`, `not-found.tsx`; error page not exercised by a test |
+| Loading states | IMPLEMENTED | Skeleton + DataTable loading state; no route-level `loading.tsx` yet |
 | Environment validation    | UNIT_TESTED | `src/lib/env`, 16 unit tests; production build fails on missing variables (local, 2026-10-10). No deployed environment to verify against |
 | Git repository configured | NOT_STARTED |                  |
 | CI configured             | IMPLEMENTED | `.github/workflows/ci.yml`; green on PR #1 and `main` (`3c6b99c`) 2026-10-10. Covers lint/type/unit/build/E2E smoke/prod audit only |

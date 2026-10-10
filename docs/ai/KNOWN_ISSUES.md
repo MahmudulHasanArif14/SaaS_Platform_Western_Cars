@@ -106,21 +106,50 @@ Related decision: DECISIONS.md "CI audit gate scope"
 ## LOW
 
 ```text id="m7t3za"
-ISSUE-001, ISSUE-004, ISSUE-006 (ISSUE-003, ISSUE-005 RESOLVED)
+ISSUE-004, ISSUE-006, ISSUE-007, ISSUE-008 (ISSUE-001, ISSUE-003, ISSUE-005 RESOLVED)
 ```
 
 ### ISSUE-001 — Home page references deleted images
 
 ```text
-Status: OPEN
+Status: RESOLVED
 Severity: LOW
 Area: UI (starter page)
 First detected: 2026-10-10
-Actual: src/app/page.tsx renders <Image src="/next.svg"> and "/vercel.svg"; both files are deleted in the working
-        tree (uncommitted) and public/ is empty. Build and E2E smoke still pass.
-Impact: Broken images on `/` at runtime (inferred from the files; not observed in a browser this session).
-Proposed fix: Replace the starter page in T-102 (app shell), or restore the files.
+Resolution: Starter page replaced in T-102; src/app/page.tsx no longer references any image.
+Verification: E2E smoke passes; `grep -r "svg" src/app/page.tsx` has no match. (The 5 public/*.svg deletions are
+              still uncommitted in the working tree and are now unreferenced.)
 Related files: src/app/page.tsx, public/
+```
+
+### ISSUE-007 — Border token does not give 3:1 against surfaces
+
+```text
+Status: OPEN
+Severity: LOW
+Area: UI / accessibility (WCAG 1.4.11 non-text contrast)
+First detected: 2026-10-10 (T-102, calculated; axe does not test this)
+Actual: The brief's `--border` (#262a30 dark, #e3e6ea light) is roughly 1.3:1 against `--background`/`--surface`,
+        while brief §3 asks for component boundaries >= 3:1. Fine for dividers; not enough to identify a form
+        control by its border alone.
+Impact: None today (no form inputs exist). Affects the first forms (T-104 login).
+Proposed fix: Add a stronger `--input` border token before building forms; confirm values with the owner.
+Related files: src/app/globals.css, docs/design/UI_UX_DESIGN_BRIEF.md
+```
+
+### ISSUE-008 — Theme script needs the CSP nonce
+
+```text
+Status: OPEN
+Severity: LOW
+Area: Security headers / theming
+First detected: 2026-10-10 (T-102)
+Actual: `next-themes` injects an inline script to set the theme before paint. A nonce-based CSP (T-103) will
+        block it unless the nonce is passed to the provider.
+Impact: None today (no CSP). With CSP and no nonce: theme flash and a CSP violation report.
+Proposed fix: Pass the request nonce to ThemeProvider in T-103.
+Related task: T-103
+Related files: src/components/theme-provider.tsx
 ```
 
 ### ISSUE-003 — .gitignore would ignore .env.example
@@ -1149,7 +1178,7 @@ ISSUE-002 (MITIGATED)
 ## Open Low
 
 ```text id="6x2r8d"
-ISSUE-001, ISSUE-004 (b only), ISSUE-006
+ISSUE-004 (b only), ISSUE-006, ISSUE-007, ISSUE-008
 ```
 
 ## Blocked
