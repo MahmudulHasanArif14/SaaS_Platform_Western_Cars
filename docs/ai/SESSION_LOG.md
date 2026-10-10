@@ -517,7 +517,8 @@ STATUS: COMPLETE — committed as `7c4e11d` + `3f31dd6`, PR #6 merged to `main` 
 (PR) and 38092152082 (`main`) green on both jobs. (Corrects SESSION-2026-10-10-4, which recorded it as uncommitted.)
 
 T-103:
-STATUS: INCOMPLETE
+STATUS: COMPLETE — committed as `2cc7de3` + `04f9815`, PR #7 merged to `main` as `9323a46`; CI runs 38093884228
+(PR) and 38093892616 (`main`) green on both jobs.
 
 Completed:
 - CSP + static header builders, proxy with per-request nonce, `next.config.ts` flags and `headers()`.
@@ -559,7 +560,7 @@ Tests:
 - `npm run test:e2e` PASS (40); 0 axe violations; 0 CSP violations
 - `npm run check:bundle` PASS · `npm audit --omit=dev --audit-level=high` PASS (0)
 - Production-build probe with `curl` PASS (see CURRENT_TASK.md) · `next dev` in Chromium: 0 CSP violations
-- GitHub Actions: NOT RUN (not pushed)
+- GitHub Actions: PASS on PR #7 and `main`
 - Not tested: non-Chromium browsers, a deployed URL, securityheaders.com
 
 Build:
@@ -577,14 +578,103 @@ Issues Discovered:
 Decisions:
 - CSP shape, style relaxations, dynamic rendering, `get-nonce` dependency — DECISIONS.md 2026-10-11.
 
-Remaining:
-- Commit, push, PR, CI green.
+Next Task:
+- T-104 (Supabase clients, session refresh proxy, login/logout/reset) — recommendation only, not started.
 
 Blocked By:
-- Owner go-ahead to commit and push.
+NONE
+
+Production Readiness:
+- NOT READY
+
+---
+
+## SESSION-2026-10-11-2
+
+Date: 2026-10-11
+AI/Environment: Claude Code (Windows, local; no Docker)
+Branch: feature/t-104-supabase-auth (from main 9323a46)
+Commit: 9323a46 (all T-104 work uncommitted)
+Task: T-104 — Supabase clients, session refresh proxy, login/logout/reset pages
+Objective: Email + password sign-in with cookie sessions, no tokens in browser storage, proven by an E2E login.
+
+Task:
+STATUS: INCOMPLETE
+
+Completed:
+- Read current official Supabase SSR docs and the bundled Next.js 16 auth / Cache Components guides first;
+  findings in INTEGRATION_STATUS.md §4.
+- Supabase clients, proxy session refresh, `requireAuth`, auth service + schemas, sign-in / forgot / reset /
+  account pages, `/auth/confirm`, sign-out, safe `next=` redirect.
+- `supabase/config.toml` (sign-up off, 12-character minimum, token-hash recovery template); CI starts the local
+  stack; `scripts/supabase-local-env.mjs`.
+- Form field component; `--input` token; primary button hover contrast.
+
+Files Created:
+- src/lib/supabase/{server,client,admin,proxy,config,cookies}.ts, src/lib/authorization/index.ts,
+  src/lib/routes.ts, src/lib/security/redirect.ts, src/modules/auth/{auth.service,auth.schema}.ts
+- src/app/(auth)/{layout,actions,auth-card,auth-form}.tsx|ts, src/app/(auth)/{login,forgot-password,reset-password}/*,
+  src/app/auth/confirm/route.ts, src/app/account/page.tsx, src/components/form-field.tsx
+- supabase/{config.toml,.gitignore,templates/recovery.html}, scripts/supabase-local-env.mjs
+- tests/e2e/{auth.spec,supabase}.ts, tests/unit/{redirect,routes,auth-schema,auth-service}.test.ts
+
+Files Modified:
+- src/proxy.ts, src/lib/security/headers.ts, src/app/{page.tsx,globals.css}, src/components/ui/button.tsx,
+  playwright.config.ts (`E2E_PORT`), .github/workflows/ci.yml, tests/e2e/design-system.spec.ts,
+  tests/unit/security-headers.test.ts, package.json, package-lock.json
+- docs/ai/{CURRENT_TASK,WORKSPACE_STATE,SESSION_LOG,ROADMAP,KNOWN_ISSUES,DECISIONS,INTEGRATION_STATUS,
+  PRODUCTION_READINESS}.md, docs/security/SECURITY_CHECKLIST.md, docs/design/DESIGN_SYSTEM.md
+
+Database Changes:
+- None (no migrations; `supabase/config.toml` only)
+
+Integration Changes:
+- Supabase Auth: IMPLEMENTED, not connected. No hosted project created or modified.
+
+Security Changes:
+- httpOnly session cookies; identity from `getClaims`; proxy + page gating; generic auth errors; safe redirect;
+  Supabase origin in CSP `connect-src`; public sign-up disabled in local config.
+- No secrets read or written. Probes used fake `*.example.test` / `sb_*_test_value` / stub values only.
+
+Bugs found by the tests and fixed:
+- Open redirect: `/..//host` normalised to `//host` in the `next` guard.
+- Supabase client read the clock before the render was tied to a request (Next.js error on every `/account`
+  render); `connection()` added.
+- Primary button hover below 4.5:1 in both themes (pre-existing).
+- Toast accessibility check raced the fade-in (pre-existing flake).
+
+Tests:
+- `npm run format:check` PASS · `npm run lint` PASS · `npm run typecheck` PASS · `npm test` PASS (135)
+- `npm run test:e2e` PASS (52), 7 SKIPPED — they need Supabase Auth
+- Against a stand-in Auth API (scratch script, not Supabase): 57 passed, 2 skipped; token refresh checked
+- Production-build probe with `curl` PASS (see CURRENT_TASK.md)
+- `npm run check:bundle` PASS · `npm audit --omit=dev --audit-level=high` PASS (0)
+- Real Supabase Auth: NOT RUN (no Docker) · GitHub Actions: NOT RUN (not pushed)
+
+Build:
+- `npm run build` PASS (11 dynamic routes + proxy)
+
+Deployment:
+- None
+
+Issues Resolved:
+- ISSUE-007.
+
+Issues Discovered:
+- ISSUE-011 (no app-level auth rate limiting), ISSUE-012 (auth not verified against real Supabase).
+
+Decisions:
+- Supabase Auth integration shape — DECISIONS.md 2026-10-11.
+
+Remaining:
+- Run the 7 skipped E2E tests against real Supabase Auth (CI or local Docker); commit, push, PR, CI green.
+
+Blocked By:
+- No Docker on the development machine; owner go-ahead to commit and push.
 
 Exact Next Action:
-- Commit T-103 on `feature/t-103-security-headers`, push, open PR, check CI.
+- Commit on `feature/t-104-supabase-auth`, push, open PR, read the E2E job result and fix what the first real
+  run shows.
 
 Production Readiness:
 - NOT READY

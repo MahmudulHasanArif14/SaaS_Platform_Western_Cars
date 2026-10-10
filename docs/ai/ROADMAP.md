@@ -208,7 +208,7 @@ CHANGELOG.md
 Status:
 
 ```text
-IN_PROGRESS — T-100 (tooling + CI skeleton) COMPLETED 2026-10-10 (PR #1, CI green on main). T-101 (env validation) COMPLETED 2026-10-10 (PR #5, CI green on main). T-102 (tokens, theming, app shell, base components) COMPLETED 2026-10-10 (PR #6, CI green on main). T-103 (security headers, CSP nonce) IMPLEMENTED, locally verified, not yet completed. T-104+ NOT_STARTED.
+IN_PROGRESS — T-100 (tooling + CI skeleton) COMPLETED 2026-10-10 (PR #1, CI green on main). T-101 (env validation) COMPLETED 2026-10-10 (PR #5, CI green on main). T-102 (tokens, theming, app shell, base components) COMPLETED 2026-10-10 (PR #6, CI green on main). T-103 (security headers, CSP nonce) COMPLETED 2026-10-11 (PR #7, CI green on main). T-104 (Supabase clients, session refresh, login/logout/reset) IMPLEMENTED, not verified against real Supabase Auth. T-105+ NOT_STARTED.
 ```
 
 ## Goals

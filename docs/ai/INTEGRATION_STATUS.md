@@ -43,7 +43,7 @@ UI Exists ≠ Integration Complete
 
 | Provider            | Category               | Priority | Status      | Production Verified | Owner | Notes |
 | ------------------- | ---------------------- | -------: | ----------- | ------------------- | ----- | ----- |
-| Supabase            | Database/Auth/Realtime |       P0 | NOT_STARTED | NO                  |       |       |
+| Supabase            | Database/Auth/Realtime |       P0 | IMPLEMENTED | NO                  |       | Auth only (T-104). Not connected: no project exists; never run against real Supabase Auth |
 | Vercel              | Application Hosting    |       P0 | NOT_STARTED | NO                  |       |       |
 | Domain Registrar    | Domain                 |       P0 | NOT_STARTED | NO                  |       |       |
 | DNS Provider        | DNS                    |       P0 | NOT_STARTED | NO                  |       |       |
@@ -134,9 +134,36 @@ Jobs/Queues where applicable
 ## Connection
 
 ```text
-Status: NOT_STARTED
-Environment: LOCAL
+Status: IMPLEMENTED (Auth only) — NOT CONNECTED
+Environment: LOCAL (local CLI stack is the intended backend; it cannot start on the dev machine — no Docker)
+Hosted project: none for this application
 ```
+
+## Findings from official documentation (read 2026-10-11)
+
+Sources: supabase.com/docs "Creating a Supabase client for SSR", "Build a User Management App with Next.js"
+(via the Supabase docs search), `@supabase/ssr` 0.12.7 and `@supabase/auth-js` type definitions.
+
+```text
+Authentication : publishable key (sb_publishable_…) for user-scoped clients, secret key (sb_secret_…) for the
+                 admin client. Legacy anon / service_role keys work until the end of 2026; not used here.
+Server clients : createServerClient with getAll / setAll cookie handlers. setAll also receives cache headers
+                 (Cache-Control, Expires, Pragma) that must be copied to the response.
+Session refresh: must happen in the Next.js proxy by calling auth.getClaims(); nothing may run between creating
+                 the client and that call.
+Authorization  : getClaims() verifies the JWT signature (JWKS for asymmetric keys, otherwise a getUser call).
+                 getSession() must not be trusted on the server.
+Email links    : server-side flow uses a token hash: /auth/confirm?token_hash=…&type=recovery → verifyOtp.
+                 The email template has to be changed for this (config.toml locally, dashboard when hosted).
+Caching        : responses that set session cookies must not be cached by a CDN.
+Rate limits    : Auth has built-in per-IP limits (config.toml [auth.rate_limit]); see KNOWN_ISSUES ISSUE-011.
+Webhooks       : none used.
+Production     : separate project per environment; custom SMTP; leaked-password protection; site URL and
+                 redirect allow-list set to the exact app URL. None of this is done.
+```
+
+Deviation from the documented example: session cookies are forced `HttpOnly`, so the browser client is
+anonymous (DECISIONS.md 2026-10-11).
 
 ## Required Configuration
 
