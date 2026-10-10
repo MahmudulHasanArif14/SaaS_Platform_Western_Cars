@@ -142,3 +142,30 @@ Residual: an HTML-injection bug could still set inline `style` attributes; `img-
 those can load. No violation reporting yet.
 Cost impact: no static HTML; every page view is server-rendered (KNOWN_ISSUES ISSUE-010).
 Migration impact: every new third-party origin must be added to the policy in `src/lib/security/headers.ts`.
+
+### 2026-10-11 — Supabase Auth integration shape (T-104)
+
+Decision:
+
+1. All authentication runs on the server (Server Actions + `/auth/confirm`). Session cookies are forced
+   `HttpOnly`, `SameSite=Lax` and, when deployed, `Secure`. `@supabase/ssr` leaves them readable by JavaScript by
+   default so its browser client can use them; here the browser client is therefore anonymous.
+2. The proxy refreshes the session and makes the first access decision for protected routes (status must be set
+   before streaming, ISSUE-009). Pages, actions and data functions call `requireAuth()` / `getCurrentUser()`
+   again; the proxy is never the only gate (TR-020).
+3. Identity comes from `auth.getClaims()` only.
+4. Public sign-up is disabled. Accounts are created by an administrator until invitations exist (T-107).
+5. Provider error messages are never shown; wrong password, unknown email, unconfirmed and banned accounts give
+   the same answer.
+6. The local Supabase CLI stack is the backend for development, CI and E2E. E2E helpers refuse a non-local URL.
+
+New dependencies: `@supabase/supabase-js`, `@supabase/ssr` (runtime, the documented SSR integration);
+`supabase` (dev, CLI used by CI and local development).
+Alternatives considered: readable cookies with a browser client (the documented default; a script-injection bug
+could then read the refresh token); a hosted project for tests (tests create and delete users; costs a project
+slot); gating in layouts only (returns 200 and leaks the payload, ISSUE-009).
+Security impact: tokens are not reachable from JavaScript. Consequence: Realtime (chat, presence) cannot use the
+browser client's session — it will need a short-lived token issued by a server endpoint. To be designed with
+ADR-008.
+Cost impact: none now. Migration impact: hosted projects need the recovery email template, sign-up and password
+settings applied in the dashboard or with `supabase config push`.

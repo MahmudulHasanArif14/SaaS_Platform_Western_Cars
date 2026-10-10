@@ -42,7 +42,7 @@ Themes: `next-themes`, class strategy, default dark, light and system selectable
 
 | Component | File | Notes |
 |---|---|---|
-| shadcn/ui primitives | `src/components/ui/*` | Generated (`radix-nova` style, `components.json`). Local edits: `button` destructive variant is solid; `sidebar` `SidebarInset` renders a `div` so pages own `<main>` |
+| shadcn/ui primitives | `src/components/ui/*` | Generated (`radix-nova` style, `components.json`). Local edits: `button` destructive variant is solid, default variant hover mixes towards `--foreground` (the old `primary/80` hover fell below 4.5:1 in both themes); `sidebar` `SidebarInset` renders a `div` so pages own `<main>` |
 | AppShell | `src/components/app-shell/app-shell.tsx` | Sidebar 240 / 64 px, icon rail, sheet below 768 px, skip link, top bar with ⌘K and theme. `topBarEnd` slot for org switcher / notifications / user menu |
 | CommandPalette | `src/components/app-shell/command-palette.tsx` | ⌘K / Ctrl+K. Navigation and theme only |
 | PageHeader, PageContainer | `src/components/app-shell/page-header.tsx` | Title + status + actions; 1440 px (tables) / 880 px (forms) |
@@ -67,3 +67,13 @@ needs it.
 - Destructive confirmation uses `ConfirmDialog` (AlertDialog), not `Dialog`.
 - Extend shadcn components in place; record local edits in the table above.
 - Every new screen gets an axe check in `tests/e2e` for light, dark and mobile.
+
+## Forms (T-104)
+
+- `FormField` (`src/components/form-field.tsx`): label, input, hint and error linked with `aria-describedby` /
+  `aria-invalid`. Inputs are 40 px high on forms.
+- `--input` is the form-control boundary colour (`#7f8792` light, `#6b7380` dark), at least 3.2:1 against
+  background and surfaces. `--border` stays for dividers and cards.
+- Errors: field message under the field; form-level message in a `role="alert"` box with an icon, never colour
+  alone. Notices use `role="status"`.
+- Auth pages (`src/app/(auth)`): single column, 384 px max, no card chrome.

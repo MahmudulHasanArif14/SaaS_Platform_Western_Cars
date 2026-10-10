@@ -71,11 +71,11 @@ Never mark a feature production-ready based only on a successful local build.
 | Requirement                    | Status      | Evidence / Notes |
 | ------------------------------ | ----------- | ---------------- |
 | Supabase Auth                  | NOT_STARTED |                  |
-| Login                          | NOT_STARTED |                  |
+| Login                          | IMPLEMENTED | T-104; not run against real Supabase Auth (ISSUE-012); no app-level rate limit (ISSUE-011) |
 | Logout                         | NOT_STARTED |                  |
 | Email verification             | NOT_STARTED |                  |
-| Password reset                 | NOT_STARTED |                  |
-| Session handling               | NOT_STARTED |                  |
+| Password reset                 | IMPLEMENTED | T-104; emailed-link round trip never run (ISSUE-012) |
+| Session handling               | IMPLEMENTED | T-104; httpOnly cookies, refresh in the proxy; verified against a stand-in API only |
 | Protected routes               | NOT_STARTED |                  |
 | MFA                            | NOT_STARTED |                  |
 | Step-up authentication         | NOT_STARTED |                  |

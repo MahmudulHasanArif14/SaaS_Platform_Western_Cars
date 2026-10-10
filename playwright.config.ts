@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const port = 3000;
+// Override when something else (e.g. `npm run dev`) already uses 3000.
+const port = Number(process.env.E2E_PORT ?? 3000);
 const baseURL = `http://127.0.0.1:${port}`;
 const isCI = Boolean(process.env.CI);
 

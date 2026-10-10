@@ -79,7 +79,7 @@ None
 ## MEDIUM
 
 ```text id="4kq9dc"
-ISSUE-002 (MITIGATED), ISSUE-009 (MITIGATED)
+ISSUE-002 (MITIGATED), ISSUE-009 (MITIGATED), ISSUE-011, ISSUE-012
 ```
 
 ### ISSUE-002 — 5 high-severity advisories in the lint toolchain
@@ -106,7 +106,7 @@ Related decision: DECISIONS.md "CI audit gate scope"
 ## LOW
 
 ```text id="m7t3za"
-ISSUE-004, ISSUE-006, ISSUE-007, ISSUE-010 (ISSUE-001, ISSUE-003, ISSUE-005, ISSUE-008 RESOLVED)
+ISSUE-004, ISSUE-006, ISSUE-010 (ISSUE-001, ISSUE-003, ISSUE-005, ISSUE-007, ISSUE-008 RESOLVED)
 ```
 
 ### ISSUE-001 — Home page references deleted images
@@ -125,8 +125,11 @@ Related files: src/app/page.tsx, public/
 ### ISSUE-007 — Border token does not give 3:1 against surfaces
 
 ```text
-Status: OPEN
+Status: RESOLVED
 Severity: LOW
+Resolution: T-104 gives `--input` its own value (#7f8792 light, #6b7380 dark): at least 3.2:1 against
+            background and both surfaces. `--border` is unchanged and stays for dividers. Values were chosen
+            by the agent to meet the ratio, not confirmed with the owner.
 Area: UI / accessibility (WCAG 1.4.11 non-text contrast)
 First detected: 2026-10-10 (T-102, calculated; axe does not test this)
 Actual: The brief's `--border` (#262a30 dark, #e3e6ea light) is roughly 1.3:1 against `--background`/`--surface`,
@@ -187,6 +190,47 @@ Impact: Higher server cost per page view; no CDN caching of HTML. Not measured (
 Proposed fix: None now — the authenticated app is dynamic anyway. If public marketing pages are added, serve
         them from a route group with a hash-based (SRI) policy instead of a nonce.
 Related files: src/app/layout.tsx, src/proxy.ts
+```
+
+### ISSUE-011 — No application-level rate limiting on auth endpoints
+
+```text
+Status: OPEN
+Severity: MEDIUM
+Area: Security / authentication (TR-026, SEC-B03)
+First detected: 2026-10-11 (T-104)
+Actual: Sign-in, password-reset request and the confirm link are limited only by Supabase Auth's own per-IP
+        limits. Behind the app server every request reaches Supabase from the server's address, so those limits
+        do not distinguish clients, and there is no per-account cooldown (APP_FLOW FLOW-01: "5 failures →
+        cooldown").
+Impact: Password guessing is slowed only by Supabase's global limits; one client can exhaust the limit for
+        everyone. No CAPTCHA.
+Blocked by: ADR-007 (rate-limit store) is PENDING.
+Proposed fix: Decide ADR-007, then limit per IP and per account in the auth actions; forward the client IP to
+        Supabase if supported; consider CAPTCHA on repeated failures.
+Production blocker: YES
+Related task: T-104, T-106
+Related files: src/app/(auth)/actions.ts, src/modules/auth/auth.service.ts
+```
+
+### ISSUE-012 — Auth flows not verified against real Supabase Auth
+
+```text
+Status: OPEN
+Severity: MEDIUM
+Area: Authentication / testing
+First detected: 2026-10-11 (T-104)
+Actual: Docker is not installed on the development machine, so `supabase start` cannot run. The 7 E2E tests
+        that sign in were run only against a stand-in for the Auth HTTP API written for the purpose (not
+        committed). The emailed password-reset round trip has not run at all. The CI steps that start the local
+        stack and export its credentials are untested.
+Unverified in particular: key names printed by `supabase status -o json`; whether the local stack signs
+        tokens asymmetrically (JWKS) or `getClaims` falls back to a network call; the recovery template and
+        `/auth/confirm`; Supabase's real error codes and rate limits.
+Impact: T-104's acceptance criterion is not met. Sign-in may fail against a real project.
+Proposed fix: Run the suite in CI (push) or install Docker Desktop and run it locally.
+Related task: T-104
+Related files: tests/e2e/auth.spec.ts, tests/e2e/supabase.ts, scripts/supabase-local-env.mjs, .github/workflows/ci.yml
 ```
 
 ### ISSUE-003 — .gitignore would ignore .env.example
@@ -1209,19 +1253,19 @@ None
 ## Open Medium
 
 ```text id="3j9p6c"
-ISSUE-002 (MITIGATED), ISSUE-009 (MITIGATED)
+ISSUE-002 (MITIGATED), ISSUE-009 (MITIGATED), ISSUE-011, ISSUE-012
 ```
 
 ## Open Low
 
 ```text id="6x2r8d"
-ISSUE-004 (b only), ISSUE-006, ISSUE-007, ISSUE-010
+ISSUE-004 (b only), ISSUE-006, ISSUE-010
 ```
 
 ## Blocked
 
 ```text id="4q7m0z"
-T-107 (org-creation mode), T-104 / T-105 (Supabase CLI) — see section 20
+T-107 (org-creation mode), T-104 verification / T-105 (Docker for the local Supabase stack) — see section 20
 ```
 
 ## Deferred

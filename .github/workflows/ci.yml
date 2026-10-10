@@ -52,6 +52,12 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      # Throwaway local stack (Docker) for the sign-in tests. Never a hosted
+      # project: the tests create and delete users.
+      - name: Start local Supabase
+        run: npx supabase start -x realtime,storage-api,imgproxy,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Point the app and tests at the local stack
+        run: node scripts/supabase-local-env.mjs >> "$GITHUB_ENV"
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}

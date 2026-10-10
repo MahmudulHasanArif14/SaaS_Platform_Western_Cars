@@ -256,6 +256,11 @@ test.describe("feedback", () => {
       await dialog.getByRole("button", { name: "Delete record" }).click();
       await expect(dialog).toBeHidden();
       await expect(page.getByText("Sample record deleted")).toBeVisible();
+      // The toast fades in; axe reads blended colours until it is opaque.
+      await expect(page.locator("[data-sonner-toast]")).toHaveCSS(
+        "opacity",
+        "1",
+      );
       await expectNoViolations(page);
     });
   }
