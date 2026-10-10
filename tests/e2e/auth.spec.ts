@@ -168,10 +168,14 @@ test.describe("with Supabase Auth", () => {
     await expect(page).toHaveURL(/\/login\?next=%2Faccount$/);
     await signIn(page, email, password);
 
+    // Either outcome ends the wait, so a rejected sign-in reports its message.
+    const signedIn = page.getByRole("heading", {
+      level: 1,
+      name: "You're signed in",
+    });
+    await expect(signedIn.or(formAlert(page))).toBeVisible();
+    expect(await formAlert(page).allTextContents()).toEqual([]);
     await expect(page).toHaveURL(/\/account$/);
-    await expect(
-      page.getByRole("heading", { level: 1, name: "You're signed in" }),
-    ).toBeVisible();
     await expect(page.getByText(email)).toBeVisible();
     await expectNoAxeViolations(page);
 
